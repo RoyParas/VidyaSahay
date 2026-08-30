@@ -1,0 +1,38 @@
+<a class="auth-home" routerLink="/">← Back to Home</a>
+<div class="auth-shell">
+  <div class="auth-brand-panel">
+    <img [src]="logoPath" alt="VidyaSahay" />
+    <h2>Welcome back</h2>
+  </div>
+  <div class="auth-card">
+    <h1>Login to VidyaSahay</h1>
+    <form id="loginForm">
+      <div class="field">
+        <label>Email Address</label
+        ><input
+          id="email"
+          name="email"
+          type="email"
+          value="student@vidyasahay.test"
+          autocomplete="username"
+          required
+        />
+      </div>
+      <div class="field">
+        <label>Password</label
+        ><input
+          id="password"
+          name="password"
+          type="password"
+          value="123456"
+          autocomplete="current-password"
+          required
+        />
+      </div>
+      <button class="btn primary" id="loginBtn" type="submit">Login</button>
+    </form>
+    <p class="auth-switch">
+      New student? <a routerLink="/register">Register</a>
+    </p>
+  </div>
+</div>

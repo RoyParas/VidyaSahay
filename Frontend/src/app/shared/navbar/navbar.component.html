@@ -1,0 +1,48 @@
+<header class="topbar app-navbar">
+  <div class="navbar-left">
+    <button
+      class="mobile-menu-btn"
+      type="button"
+      aria-label="Open menu"
+      (click)="onToggleSidebar()"
+    >
+      ☰
+    </button>
+
+    <div class="navbar-page-title" *ngIf="pageTitle">
+      {{ pageTitle }}
+    </div>
+  </div>
+
+  <div class="topbar-actions navbar-actions">
+    <button
+      class="icon-button notification-button"
+      type="button"
+      routerLink="/notifications"
+      aria-label="Notifications"
+    >
+      🔔
+      <span
+        class="notification-dot"
+        *ngIf="notificationCount > 0"
+      ></span>
+    </button>
+
+    <a class="icon-button" routerLink="/messages" aria-label="Messages">
+      ✉
+    </a>
+
+    <a class="user-menu" routerLink="/profile">
+      <div class="user-avatar">
+        {{ userName.charAt(0) }}
+      </div>
+
+      <div class="user-details">
+        <span class="user-name">{{ userName }}</span>
+        <small>{{ userRole }}</small>
+      </div>
+
+      <span class="dropdown-caret">⌄</span>
+    </a>
+  </div>
+</header>

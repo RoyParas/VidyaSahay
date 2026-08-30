@@ -1,0 +1,248 @@
+Schema:-
+1) User
+--> id (PK)
+--> role_id (FK)
+--> first Name
+--> last Name
+--> email (Unique)
+--> mobile
+--> hashed_password
+--> must_change_password (boolean)
+--> isActive (boolean)
+--> created_at (Timestamp)
+--> updated_at (Timestamp)
+
+
+2) Roles
+--> id (PK)
+--> name
+--> created_at (Timestamp)
+--> updated_at (Timestamp)
+
+
+3) Students
+--> id (PK)
+--> institute_id (FK)
+--> user_id (FK)
+--> aadhar (unique)
+--> gender (enum)
+--> dob (if we want)
+--> father name
+--> mother name
+--> annual_family_income (int)
+--> address_id (FK)
+--> location
+--> pincode
+--> institute_verification (Enum: pending/verified/rejected)
+--> Category (General/EBC/OBC/SC/ST/EWS/NT/SEBC)
+--> Fees Paid
+--> Fees Pending
+--> course_id (FK)
+--> created_at (Timestamp)
+--> updated_at (Timestamp)
+
+
+4) Documents
+--> id (PK)
+--> student_id (FK)
+--> document_name
+--> document_status (Verified/ Not verified)
+--> document (blob/static folder in local backend_server)
+
+
+5) Institutes
+--> id (PK)
+--> user_id (FK)
+--> name
+--> address_id (FK)
+--> location
+--> pincode
+--> bank_name
+--> branch_name
+--> ifsc_code
+--> account_number
+--> created_at (Timestamp)
+--> updated_at (Timestamp)
+
+
+6) Bank Partners
+--> id (PK)
+--> user_id (FK)
+--> Bank Name
+--> created_at (timestamp)
+--> updated_at (timestamp)
+
+
+7) Courses
+--> id (PK)
+--> profession_id (FK)
+--> institute_id (FK)
+--> name
+--> year
+--> fees
+--> created_at (Timestamp)
+--> updated_at (Timestamp)
+
+
+8) Addresses
+--> id (PK)
+--> Country
+--> State
+--> District
+--> City
+--> created_at (Timestamp)
+--> updated_at (Timestamp)
+
+
+9) Applications
+--> id (PK)
+--> student_id (FK)
+--> doc_ids (Arrays of doc_ids)
+--> type (Enum: loan/scholarship/institute_verification)
+--> scheme_id (depends on type)
+--> created_at/submitted_on (Timestamp)
+--> updated_at (Timestamp)
+
+
+10) Application_history
+--> id (PK)
+--> application_id (FK)
+--> status (Enum: submitted/under_review/reverted/rejected/approved) (Should we keep submitted?)
+--> remark
+--> From_userId (FK)
+--> To_usedId (FK)
+--> created_at (Timestamp)
+
+
+11) Loan_schemes
+--> loan_scheme_id (PK)
+--> loan_scheme_name
+--> scheme_status Boolean (0 for Inactive/1 for Active)
+--> effective_from (Date)
+--> effective_to (Date)
+--> min_loan_amount DECIMAL(18,2),
+--> max_loan_amount DECIMAL(18,2),
+--> floating_rate_type Boolean (0 for fixed interest type, 1 for floating),
+--> minimum_rate DECIMAL(5,2),
+--> maximum_rate DECIMAL(5,2),
+--> Disbursement_type (Enum: Yearly, One-Time)
+--> created_by (user_id) (FK)
+--> updated_by (user_id) (FK)
+--> created_at (timestamp)
+--> updated_at (timestamp)
+
+
+12) Education_loan_eligibility
+--> eligibility_id (PK),
+--> scheme_id BIGINT NOT NULL (FK loan_Schemes),
+--> min_age INT,
+--> max_age INT,
+--> eligible_professions (Arrays_of_ids_FK_Eligible_course)
+--> required_documents (Arrays_of_ids_FK_Required_docs)
+--> co_borrower_required BOOLEAN DEFAULT TRUE,
+--> min_credit_score INT, (depends on co-borrower if required or not)
+--> created_at (timestamp)
+--> updated_at (timestamp)
+
+
+13) Moratorium
+--> moratorium_id (PK)
+--> loan_scheme_id (FK)
+--> course_period_included BOOLEAN
+--> additional_months INT
+--> created_at (timestamp)
+--> updated_at (timestamp)
+
+
+14) Repayment Rules
+--> repayment_id BIGINT (PK)
+--> loan_scheme_id (FK)
+--> min_tenure_years int
+--> max_tenure_years int
+--> prepayment_allowed Boolean
+--> foreclosure_Charges Decimal
+--> created_at (timestamp)
+--> updated_at (timestamp)
+
+
+15) scholarship_schemes 
+--> scholarship_scheme_id (PK)
+--> scholarship_scheme_name
+--> scholarship_type(Merit-based, general(must admitted in institute), Category-based)
+--> academic_year
+--> start_date
+--> end_date
+--> scholarship_status (Boolean) (inactive/ active)
+--> created_by (user_id) (FK)
+--> updated_by (user_id) (FK)
+--> created_at (timestamp)
+--> updated_at (timestamp)
+
+
+16) Scholarship_Eligibility 
+--> scholarship_eligibility_id (PK)
+--> scholarship_scheme_id (FK)
+--> minimum_age
+--> aaximum_age
+--> eligible Categories(General, SC, ST, OBC, EWS, Minority, ALL, EBC)
+--> maximum_annual_family_income
+--> minimum_percentage_criteria
+--> eligible_profession (Array of profession_ids) (Array of FK)
+--> required_documents (Array of docs_ids) (Array of FK)
+--> created_at (timestamp)
+--> updated_at (timestamp)
+
+
+17) Scholarship_Benefit_Details
+--> scholarship_benefit_id (PK)
+--> scholarship_scheme_id (FK)
+--> Scholarship Amount
+--> Amount Type(Fixed amount, Percentage of fees)
+--> Payment Frequency(One-time, Monthly, Quarterly, Yearly)
+--> Total Scheme Budget
+--> created_at (timestamp)
+--> updated_at (timestamp)
+
+
+18) Professions(Common for loan_schemes and scholarship_schemes)
+--> profession_id (PK),
+--> profession_name VARCHAR(200) [Example: Engineering, MBA, Medical, Law, CA, PhD]
+
+
+19) Required Documents (Common for loan_schemes and scholarship_schemes)
+--> doc_id (PK),
+--> doc_name VARCHAR(200)
+--> Examples: 
+Aadhaar Card Required
+Income Certificate Required
+Caste Certificate Required
+Domicile Certificate Required
+Marksheet Required
+Admission Proof Required
+Bonafide Certificate Required
+Bank Passbook Required
+Disability Certificate Required
+Photograph Required
+Other Required Documents
+
+
+20) Disbursements
+--> id (PK)
+--> institute_id  (FK)
+--> Type (Loan/Scholarship)
+--> disburser_id (user_id) (FK)
+--> student_id (FK)
+--> amount
+--> disbursement_date (timestamp)
+
+==> Pending:-
+1. Digilocker Documents
+==> UI Changes:-
+1. Remove Bank Details from MyProfile Page of Students
+2. Add Courses Form for Institute Portal
+3. Rename Applications Identification to Applications and Applications to My Students on sidebar
+4. Add First name and Last name on add bank partners form instead of contact person name on Admin Portal
+5. Remove Institute Code and Institute Type from Add/Edit Institution from Admin Portal. Add City input in the form
+6. View Page is pending for all (Loan/ Government Scheme View, Insitute details view, Student profile view, Bank details view)
+7. Every form needs to be designed again
+8. Upload additional documents is not in picture again

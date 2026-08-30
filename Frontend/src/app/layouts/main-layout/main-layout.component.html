@@ -1,0 +1,25 @@
+<div class="main-layout portal-layout">
+  <app-sidebar
+    [isOpen]="isSidebarOpen"
+    [userName]="userName"
+    [userRole]="userRole"
+    [notificationCount]="notificationCount"
+    (closeSidebar)="closeSidebar()"
+  ></app-sidebar>
+  
+  <main class="main-shell portal-main">
+    <app-navbar
+      [userName]="userName"
+      [userRole]="userRole"
+      [notificationCount]="notificationCount"
+      pageTitle="Scholarship Management"
+      (toggleSidebar)="toggleSidebar()"
+    ></app-navbar>
+
+    <section class="page-content portal-content">
+        <router-outlet></router-outlet>    
+    </section>
+
+    <app-footer></app-footer>
+   </main>
+</div>

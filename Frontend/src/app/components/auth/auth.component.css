@@ -1,0 +1,74 @@
+.auth-home {
+  position: fixed;
+  left: 24px;
+  top: 20px;
+  text-decoration: none;
+  color: #0d4fa3;
+  font-weight: 900;
+  z-index: 10;
+}
+.auth-shell {
+  width: min(950px, 94vw);
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  background: #fff;
+  border: 1px solid #dce6f3;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(13, 79, 163, 0.16);
+}
+.auth-brand-panel {
+  padding: 45px;
+  background: linear-gradient(145deg, #071f4b, #0d4fa3 70%, #0b8e82);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.auth-brand-panel img {
+  width: 210px;
+  height: 150px;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 25px;
+}
+.auth-brand-panel h2 {
+  font-size: 30px;
+  margin: 0 0 12px;
+}
+.auth-shell .auth-card {
+  width: auto;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 42px;
+}
+.auth-shell .auth-card .btn {
+  width: 100%;
+  margin-top: 16px;
+}
+.auth-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border2);
+  border-radius: 5px;
+  font: inherit;
+}
+.field textarea {
+  min-height: 95px;
+}

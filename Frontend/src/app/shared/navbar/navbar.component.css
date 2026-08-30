@@ -1,0 +1,92 @@
+.app-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 80;
+}
+
+.navbar-left {
+  margin-right: auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.mobile-menu-btn {
+  display: none;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border);
+  background: var(--white);
+  color: var(--primary);
+  border-radius: var(--radius-xs);
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.mobile-menu-btn:hover {
+  background: var(--primary-light);
+  border-color: var(--primary);
+}
+
+.navbar-page-title {
+  color: var(--text-primary);
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+
+.navbar-actions {
+  margin-left: auto;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.user-details small {
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.dropdown-caret {
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.notification-button {
+  color: var(--accent-orange);
+}
+
+/* On smaller screens navbar info moves into sidebar */
+@media (max-width: 900px) {
+  .mobile-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .app-navbar {
+    height: var(--topbar-height);
+  }
+
+  .navbar-actions {
+    display: none;
+  }
+
+  .navbar-page-title {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-page-title {
+    display: none;
+  }
+
+  .app-navbar {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}

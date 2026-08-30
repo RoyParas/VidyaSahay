@@ -1,0 +1,27 @@
+.main-layout {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: var(--sidebar-width) 1fr;
+  background: var(--bg-main);
+}
+
+/* Tablets */
+@media (max-width: 900px) {
+  .main-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Desktop follows the image layout */
+@media (min-width: 901px) {
+  .portal-layout {
+    display: grid;
+    grid-template-columns: var(--sidebar-width) 1fr;
+  }
+}
+
+@media print {
+  .main-layout {
+    display: block;
+  }
+}

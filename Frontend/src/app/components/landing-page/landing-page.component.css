@@ -1,0 +1,244 @@
+.landing-page {
+  background: #fff;
+  color: #172033;
+}
+
+.landing-hero {
+  min-height: 510px;
+  background:
+    radial-gradient(
+      circle at 30% 45%,
+      rgba(255, 150, 49, 0.38),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 72% 30%,
+      rgba(25, 158, 121, 0.38),
+      transparent 30%
+    ),
+    linear-gradient(125deg, #081f4d, #184d86 45%, #0b7e7f);
+  overflow: hidden;
+}
+
+.hero-overlay {
+  min-height: 510px;
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  align-items: center;
+  gap: 50px;
+  padding: 60px clamp(24px, 7vw, 110px);
+  background: linear-gradient(
+    90deg,
+    rgba(3, 16, 45, 0.55),
+    rgba(3, 16, 45, 0.1)
+  );
+}
+.hero-content {
+  color: var(--white);
+  max-width: 690px;
+}
+.hero-kicker,
+.section-kicker {
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 11px;
+  font-weight: 900;
+  color: #0d6fd3;
+}
+.hero-kicker {
+  color: #9cd8ff;
+}
+.hero-content h1 {
+  font-size: clamp(38px, 5vw, 68px);
+  line-height: 1.05;
+  margin: 15px 0;
+}
+.hero-content p {
+  font-size: 18px;
+  line-height: 1.65;
+  color: #dfebf8;
+}
+.hero-buttons {
+  display: flex;
+  gap: 13px;
+  flex-wrap: wrap;
+  margin-top: 28px;
+}
+.landing-cta {
+  padding: 12px 20px;
+}
+.landing-cta.secondary {
+  background: var(--white);
+  color: var(--primary);
+}
+.landing-cta.primary {
+  background: var(--primary);
+  color: var(--white);
+}
+.hero-art {
+  position: relative;
+  width: min(380px, 80vw);
+  aspect-ratio: 1;
+  margin: auto;
+}
+.hero-orbit {
+  position: absolute;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.42);
+  inset: 10%;
+}
+.orbit-two {
+  inset: 25%;
+  border-color: #63e1c0;
+}
+.hero-mark {
+  position: absolute;
+  inset: 35%;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0d4fa3, #0daf89);
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 72px;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.3);
+}
+.landing-strip {
+  padding: 14px clamp(22px, 6vw, 85px);
+  display: flex;
+  gap: 24px;
+  border-bottom: 1px solid #dce6f3;
+  font-size: 12px;
+}
+.landing-strip strong {
+  color: #0d4fa3;
+}
+.landing-section {
+  padding: 70px clamp(24px, 7vw, 110px);
+}
+.landing-section h2,
+.pan-india h2 {
+  font-size: 32px;
+  margin: 10px 0 20px;
+}
+.intro {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 50px;
+  background: #f8fbff;
+}
+.intro p {
+  font-size: 16px;
+  line-height: 1.7;
+  color: #526176;
+}
+.feature-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+.feature-pills span {
+  padding: 8px 12px;
+  border-radius: 99px;
+  background: #eaf2ff;
+  color: #0d4fa3;
+  font-weight: 800;
+}
+.intro-visual {
+  display: grid;
+  gap: 15px;
+}
+.visual-card {
+  padding: 25px;
+  border-radius: 15px;
+  background: #fff;
+  border: 1px solid #dce6f3;
+  box-shadow: 0 12px 35px rgba(13, 79, 163, 0.08);
+}
+.visual-card b {
+  display: block;
+  color: #0d4fa3;
+  font-size: 28px;
+}
+.visual-card span {
+  color: #64748b;
+}
+.capability-grid,
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.capability-grid article,
+.service-grid article {
+  padding: 26px;
+  border: 1px solid #dce6f3;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 8px 25px rgba(15, 23, 42, 0.06);
+}
+.cap-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  background: #eaf2ff;
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+}
+.pan-india {
+  margin: 0 clamp(24px, 4vw, 68px);
+  border-radius: 14px;
+  background: #14269c;
+  color: #fff;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 30px;
+  align-items: center;
+  padding: 55px clamp(25px, 6vw, 80px);
+}
+.section-kicker.light {
+  color: #9cd8ff;
+}
+.india-graphic {
+  min-height: 270px;
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+.india-graphic span {
+  font-size: 76px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.14);
+}
+.map-dots {
+  position: absolute;
+  width: 190px;
+  height: 230px;
+  background: radial-gradient(circle, #fff 0 2px, transparent 3px);
+  background-size: 18px 18px;
+  clip-path: polygon(
+    47% 0,
+    63% 13%,
+    64% 25%,
+    81% 34%,
+    73% 45%,
+    92% 58%,
+    69% 70%,
+    61% 100%,
+    46% 78%,
+    30% 69%,
+    21% 51%,
+    5% 37%,
+    27% 27%,
+    31% 10%
+  );
+}
+.service-grid {
+  grid-template-columns: repeat(4, 1fr);
+}
+.service-grid b {
+  font-size: 28px;
+  color: #0d4fa3;
+}

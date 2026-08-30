@@ -1,0 +1,56 @@
+<a class="auth-home" routerLink="/">← Back to Home</a>
+<div class="auth-shell">
+  <div class="auth-brand-panel">
+    <img [src]="logoPath" alt="VidyaSahay" />
+    <h2>Start the VidyaSahay journey</h2>
+  </div>
+  <div class="auth-card register-card">
+    <h1>Student Registration</h1>
+    <form id="registrationForm" novalidate>
+      <div class="auth-grid">
+        <div class="field">
+          <label>Full Name *</label
+          ><input name="fullName" autocomplete="name" required />
+        </div>
+        <div class="field">
+          <label>Email Address *</label
+          ><input name="email" type="email" autocomplete="email" required />
+        </div>
+        <div class="field">
+          <label>Mobile Number *</label
+          ><input name="mobile" inputmode="numeric" maxlength="10" required />
+        </div>
+        <div class="field">
+          <label>Date of Birth *</label
+          ><input name="dob" type="date" required />
+        </div>
+        <div class="field">
+          <label>Password *</label
+          ><input
+            name="password"
+            type="password"
+            minlength="8"
+            autocomplete="new-password"
+            required
+          />
+        </div>
+        <div class="field">
+          <label>Confirm Password *</label
+          ><input
+            name="confirmPassword"
+            type="password"
+            autocomplete="new-password"
+            required
+          />
+        </div>
+      </div>
+      <label class="auth-consent"
+        ><input name="terms" type="checkbox" required /> I agree to the portal
+        terms and confirm that the details are accurate.</label
+      ><button class="btn primary" type="submit">Register</button>
+    </form>
+    <p class="auth-switch">
+      Already registered? <a routerLink="/login">Login</a>
+    </p>
+  </div>
+</div>

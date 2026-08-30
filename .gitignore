@@ -1,0 +1,36 @@
+# Workspace-wide generated files and local-only artifacts
+
+# Dependencies
+node_modules/
+
+# Angular / build output
+dist/
+tmp/
+out-tsc/
+bazel-out/
+coverage/
+.angular/
+
+# Logs
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor / IDE settings
+.idea/
+.vscode/
+.history/
+*.sublime-workspace
+*.sublime-project
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Archives and packaged artifacts
+*.zip
+
+# Explicit workspace folders/files that should not be committed
+/VidyaSahay_HTML_CSS_JS/
+/Vidyasahay_Zip.zip
+/Frontend/src/environments/
