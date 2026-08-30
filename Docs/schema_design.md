@@ -58,7 +58,6 @@ Stores login and identity details for every portal user.
 - `hashed_password`
 - `must_change_password` boolean
 - `is_active` boolean
-- `last_login_at` nullable
 - `created_at`
 - `updated_at`
 
@@ -100,7 +99,6 @@ Stores student profile data.
 - `category_id` FK -> `categories.id`
 - `course_id` FK -> `courses.id`
 - `institute_verification_status` enum: `pending`, `verified`, `rejected`
-- `institute_verified_at` nullable
 - `created_at`
 - `updated_at`
 
@@ -114,8 +112,6 @@ Stores uploaded documents for students.
 - `student_id` FK -> `students.id`
 - `file_name`
 - `file_path`
-- `mime_type`
-- `file_size`
 - `verification_status` enum: `pending`, `verified`, `rejected`
 - `verified_by` FK -> `users.id` nullable
 - `verified_at` nullable
@@ -123,13 +119,13 @@ Stores uploaded documents for students.
 - `updated_at`
 
 Notes:
-- The actual file should usually be stored in the filesystem or object storage, not as a DB blob.
+- Provide constraint to upload only pdf file within the size limit on UI itself
+- The actual file should usually be stored in the filesystem or object storage.
 
 ### categories
 Stores caste/category information used across the portal.
 
 - `id` PK
-- `name` unique
 - `code` unique nullable
 - `created_at`
 - `updated_at`
@@ -390,7 +386,7 @@ Stores every status transition and remark.
 
 - `id` PK
 - `application_id` FK -> `applications.id`
-- `status` enum: `draft`, `submitted`, `under_review`, `reverted`, `rejected`, `approved`, `disbursed`
+- `status` enum: `draft`, `submitted`, `under_review`, `reverted`, `rejected`, `approved`
 - `remark`
 - `action_by_user_id` FK -> `users.id`
 - `assigned_to_user_id` FK -> `users.id` nullable
@@ -434,7 +430,7 @@ Stores shared disbursement records for both loans and scholarships.
 - `created_at`
 - `updated_at`
 
-## Notification Domain
+## Notification Domain (Future-Scope)
 
 ### notifications
 Stores in-app notifications for all roles.
