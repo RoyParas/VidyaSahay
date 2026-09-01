@@ -1,0 +1,125 @@
+<section class="vs-table-shell">
+  <header class="vs-table-header" *ngIf="title || subtitle || searchable || actions.length">
+    <div>
+      <h2 class="vs-table-title" *ngIf="title">{{ title }}</h2>
+      <p class="vs-table-subtitle" *ngIf="subtitle">{{ subtitle }}</p>
+    </div>
+
+    <div class="vs-table-toolbar">
+      <label class="vs-table-search" *ngIf="searchable">
+        <input
+          type="search"
+          [placeholder]="searchPlaceholder"
+          [(ngModel)]="searchText"
+          (ngModelChange)="onSearchChange()"
+        />
+      </label>
+
+      <ng-content select="[table-actions]"></ng-content>
+    </div>
+  </header>
+
+  <div class="vs-table-card">
+    <div class="vs-table-responsive">
+      <table class="vs-table" aria-label="Reusable data table">
+        <thead>
+          <tr>
+            <th *ngIf="showIndex" class="vs-table-cell-center" style="width: 72px;">#</th>
+            <th
+              *ngFor="let column of columns"
+              [style.width]="column.width || null"
+              [class.vs-table-cell-center]="column.align === 'center'"
+              [class.vs-table-cell-right]="column.align === 'right'"
+            >
+              {{ column.label }}
+            </th>
+            <th *ngIf="showActions && actions.length" class="vs-table-cell-center">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody *ngIf="!loading && pagedRows.length; else tableState">
+          <tr *ngFor="let row of pagedRows; let i = index; trackBy: trackByIndex">
+            <td *ngIf="showIndex" class="vs-table-cell-center">
+              {{ startItem + i }}
+            </td>
+
+            <td
+              *ngFor="let column of columns"
+              [class.vs-table-cell-center]="column.align === 'center'"
+              [class.vs-table-cell-right]="column.align === 'right'"
+            >
+              <ng-container [ngSwitch]="column.type">
+                <span *ngSwitchCase="'badge'" class="vs-badge" [ngClass]="getBadgeClass(column, row)">
+                  {{ formatValue(column, row) }}
+                </span>
+                <span *ngSwitchDefault>
+                  {{ formatValue(column, row) }}
+                </span>
+              </ng-container>
+            </td>
+
+            <td *ngIf="showActions && actions.length">
+              <div class="vs-table-actions">
+                <button
+                  *ngFor="let action of actions"
+                  type="button"
+                  class="vs-btn vs-btn-sm"
+                  [ngClass]="getActionVariant(action.variant)"
+                  (click)="onAction(action.id, row)"
+                >
+                  {{ action.label }}
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+
+        <ng-template #tableState>
+          <tbody *ngIf="loading">
+            <tr>
+              <td [attr.colspan]="colspan" class="vs-table-empty">
+                <strong>Loading...</strong>
+                <span>Fetching table records.</span>
+              </td>
+            </tr>
+          </tbody>
+
+          <tbody *ngIf="!loading && !pagedRows.length">
+            <tr>
+              <td [attr.colspan]="colspan" class="vs-table-empty">
+                <strong>{{ emptyTitle }}</strong>
+                <span>{{ emptyMessage }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </ng-template>
+      </table>
+    </div>
+
+    <footer class="vs-table-footer" *ngIf="showPagination">
+      <div class="vs-table-page-info">
+        Showing {{ startItem }} to {{ endItem }} of {{ filteredRows.length }} records
+      </div>
+
+      <div class="vs-table-pagination">
+        <button class="vs-btn vs-btn-secondary vs-btn-sm" type="button" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+          Previous
+        </button>
+
+        <button
+          *ngFor="let page of getPages(); let pageIndex = index"
+          class="vs-btn vs-btn-sm"
+          [ngClass]="pageIndex + 1 === currentPage ? 'vs-btn-primary' : 'vs-btn-secondary'"
+          type="button"
+          (click)="goToPage(pageIndex + 1)"
+        >
+          {{ pageIndex + 1 }}
+        </button>
+
+        <button class="vs-btn vs-btn-secondary vs-btn-sm" type="button" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+          Next
+        </button>
+      </div>
+    </footer>
+  </div>
+</section>

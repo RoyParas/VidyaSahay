@@ -8,5 +8,5 @@ import { RouterLink } from "@angular/router";
   styleUrl: './landing-page.component.css'
 })
 export class LandingPageComponent {
-
+  indiaMapPath = 'India_Outline_no_bg.png';
 }

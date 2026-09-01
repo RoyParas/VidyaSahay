@@ -6,19 +6,35 @@ import { Injectable } from "@angular/core";
 export class AuthService {
 
   isLoggedIn(): boolean {
-    return !!localStorage.getItem('token');
+    return this.getStorageItem('token') !== null;
   }
 
   getRole(): string | null {
-    return localStorage.getItem('role');
+    return this.getStorageItem('role');
   }
 
   getToken(): string | null {
-    return localStorage.getItem('token');
+    return this.getStorageItem('token');
   }
 
   logout() : void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
+    this.removeStorageItem('token');
+    this.removeStorageItem('role');
+  }
+
+  private getStorageItem(key: string): string | null {
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return null;
+    }
+
+    return localStorage.getItem(key);
+  }
+
+  private removeStorageItem(key: string): void {
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return;
+    }
+
+    localStorage.removeItem(key);
   }
 }

@@ -22,7 +22,6 @@ export class MainLayoutComponent {
   isSidebarOpen = false;
   userName = 'Govt. User';
   userRole = 'Government Officer';
-  notificationCount = 3;
 
 
   toggleSidebar(): void {

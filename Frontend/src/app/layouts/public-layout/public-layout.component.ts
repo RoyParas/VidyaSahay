@@ -12,5 +12,4 @@ import { FooterComponent } from '../../shared/footer/footer.component';
 export class PublicLayoutComponent {
   userName = 'Govt. User';
   userRole = 'Government Officer';
-  notificationCount = 3;
 }

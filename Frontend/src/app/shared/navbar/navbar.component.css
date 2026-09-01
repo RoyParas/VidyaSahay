@@ -19,13 +19,36 @@
   background: var(--white);
   color: var(--primary);
   border-radius: var(--radius-xs);
-  font-size: 1.4rem;
-  font-weight: 800;
+  padding: 0;
 }
 
 .mobile-menu-btn:hover {
   background: var(--primary-light);
   border-color: var(--primary);
+}
+
+.mobile-menu-btn svg,
+.dropdown-caret,
+.profile-dropdown-item svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.navbar-logo-link {
+  display: inline-flex;
+  align-items: center;
+}
+
+.navbar-logo {
+  display: block;
+  height: 42px;
+  width: auto;
+  object-fit: contain;
 }
 
 .navbar-page-title {
@@ -36,12 +59,16 @@
 
 .navbar-actions {
   margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .user-details {
   display: flex;
   flex-direction: column;
   line-height: 1.2;
+  text-align: left;
 }
 
 .user-details small {
@@ -52,11 +79,63 @@
 
 .dropdown-caret {
   color: var(--text-primary);
-  font-size: 1rem;
 }
 
-.notification-button {
-  color: var(--accent-orange);
+.navbar-quick-link {
+  min-width: 92px;
+}
+
+.user-menu-wrap {
+  position: relative;
+}
+
+.user-menu-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--border);
+  background: var(--white);
+  color: var(--text-primary);
+  border-radius: 999px;
+  padding: 8px 12px 8px 8px;
+  box-shadow: var(--shadow-xs);
+}
+
+.user-menu-button:hover {
+  background: var(--primary-light);
+  border-color: var(--primary);
+}
+
+.profile-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  min-width: 220px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: 8px;
+  z-index: 200;
+}
+
+.profile-dropdown-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  border-radius: var(--radius-xs);
+  text-align: left;
+}
+
+.profile-dropdown-item:hover {
+  background: var(--primary-light);
+  color: var(--primary);
 }
 
 /* On smaller screens navbar info moves into sidebar */
@@ -71,7 +150,7 @@
     height: var(--topbar-height);
   }
 
-  .navbar-actions {
+  .navbar-user-actions {
     display: none;
   }
 
@@ -88,5 +167,14 @@
   .app-navbar {
     padding-left: 16px;
     padding-right: 16px;
+  }
+
+  .navbar-quick-link {
+    min-width: auto;
+    padding-inline: 12px;
+  }
+
+  .user-details small {
+    display: none;
   }
 }

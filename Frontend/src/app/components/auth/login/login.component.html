@@ -1,38 +1,50 @@
-<a class="auth-home" routerLink="/">← Back to Home</a>
-<div class="auth-shell">
-  <div class="auth-brand-panel">
-    <img [src]="logoPath" alt="VidyaSahay" />
-    <h2>Welcome back</h2>
-  </div>
-  <div class="auth-card">
-    <h1>Login to VidyaSahay</h1>
-    <form id="loginForm">
-      <div class="field">
-        <label>Email Address</label
-        ><input
-          id="email"
-          name="email"
-          type="email"
-          value="student@vidyasahay.test"
-          autocomplete="username"
-          required
-        />
-      </div>
-      <div class="field">
-        <label>Password</label
-        ><input
-          id="password"
-          name="password"
-          type="password"
-          value="123456"
-          autocomplete="current-password"
-          required
-        />
-      </div>
-      <button class="btn primary" id="loginBtn" type="submit">Login</button>
-    </form>
-    <p class="auth-switch">
-      New student? <a routerLink="/register">Register</a>
-    </p>
+<div class="auth-body">
+
+  <div class="auth-shell">
+    <div class="auth-brand-panel">
+      <img [src]="logoPath" alt="VidyaSahay" />
+      <h2>Welcome back</h2>
+    </div>
+
+    <div class="auth-card">
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+        <div class="form-group">
+          <label for="email" class="form-label">Email Address</label>
+          <input
+            class="form-control"
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="Enter your registered email"
+            [class.invalid]="isInvalid('email')"
+          />
+          <div class="form-error" *ngIf="emailControl?.errors && (emailControl?.touched || submitted)">
+            <span *ngIf="emailControl?.errors?.['required']">Email is required.</span>
+            <span *ngIf="emailControl?.errors?.['email']">Enter a valid email address.</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <input
+            class="form-control"
+            id="password"
+            type="password"
+            formControlName="password"
+            placeholder="Enter your password"
+            [class.invalid]="isInvalid('password')"
+          />
+          <div class="form-error" *ngIf="passwordControl?.errors && (passwordControl?.touched || submitted)">
+            <span *ngIf="passwordControl?.errors?.['required']">Password is required.</span>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" type="submit">Login</button>
+      </form>
+      <a class="btn btn-secondary" routerLink="/">Back to Home</a>
+      <p class="auth-switch">
+        New student? <a routerLink="/register">Register</a>
+      </p>
+    </div>
   </div>
 </div>

@@ -21,6 +21,19 @@ body {
   line-height: 1.5;
 }
 
+body::-webkit-scrollbar {
+  width: 6px;
+}
+
+body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+body::-webkit-scrollbar-thumb {
+  background: #b8c2cc;
+  border-radius: 10px;
+}
+
 img,
 svg,
 video {
@@ -50,8 +63,9 @@ a {
 
 :root {
   /* Primary Brand */
-  --primary: #0f56a8;
+  --primary: #04438a;
   --primary-dark: #0a3f7c;
+  --primary-extra-dark: #071f4b;
   --primary-light: #eaf3ff;
   --primary-soft: #eaf2ff;
 
@@ -82,8 +96,6 @@ a {
   --bg-main: #ffffff;
   --bg-sidebar: #f3f7fc;
   --bg-muted: #f7faff;
-  --bg-card: #ffffff;
-  --bg-table-head: #f4f7fb;
 
   --border: #d9e2ef;
   --border-dark: #c7d3e3;
@@ -150,10 +162,6 @@ a {
   padding: 0 var(--container-padding);
 }
 
-.page-content {
-  padding: 28px var(--container-padding) 40px;
-}
-
 /* ------------------------------
    4. SIDEBAR NAVIGATION
 ------------------------------ */
@@ -179,36 +187,6 @@ a {
   display: flex;
   align-items: center;
   gap: 22px;
-}
-
-.icon-button {
-  width: 42px;
-  height: 42px;
-  border: 0;
-  background: transparent;
-  color: var(--text-primary);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-pill);
-  transition: background var(--transition-fast), transform var(--transition-fast);
-  position: relative;
-}
-
-.icon-button:hover {
-  background: var(--primary-light);
-  transform: translateY(-1px);
-}
-
-.notification-dot {
-  position: absolute;
-  top: 8px;
-  right: 9px;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--danger);
-  border: 2px solid var(--white);
 }
 
 .user-menu {
@@ -238,28 +216,6 @@ a {
 /* ------------------------------
    6. TYPOGRAPHY
 ------------------------------ */
-
-.page-title {
-  margin: 0;
-  color: var(--text-primary);
-  font-size: clamp(1.7rem, 2vw, 2.2rem);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-.page-subtitle {
-  margin: 4px 0 0;
-  color: var(--text-secondary);
-  font-size: 1.05rem;
-}
-
-.card-title {
-  margin: 0;
-  color: var(--text-primary);
-  font-size: 1.05rem;
-  font-weight: 800;
-}
-
 .text-muted {
   color: var(--text-muted);
 }
@@ -281,221 +237,7 @@ a {
 }
 
 /* ------------------------------
-   7. PAGE HEADER
------------------------------- */
-
-.page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 34px;
-}
-
-.date-range-picker {
-  min-width: 330px;
-  min-height: 60px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 12px 20px;
-  background: var(--white);
-  border: 2px solid var(--border-dark);
-  border-radius: var(--radius-xs);
-  color: var(--black);
-  font-size: 1.25rem;
-  box-shadow: var(--shadow-xs);
-}
-
-.date-range-picker .calendar-icon {
-  color: var(--primary);
-}
-
-/* ------------------------------
-   8. CARDS
------------------------------- */
-
-.card {
-  background: var(--bg-card);
-  border: 2px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xs);
-}
-
-.card-body {
-  padding: 24px;
-}
-
-.card-bordered {
-  border: 2px solid var(--border);
-}
-
-.card-soft {
-  background: var(--bg-muted);
-}
-
-.stat-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(160px, 1fr));
-  gap: 24px;
-  margin-bottom: 34px;
-}
-
-.stat-card {
-  min-height: 160px;
-  padding: 24px 28px;
-  border-radius: var(--radius-md);
-  background: var(--white);
-  border: 2px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
-}
-
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
-}
-
-.stat-card-value {
-  margin: 0;
-  font-size: clamp(2rem, 4vw, 3rem);
-  line-height: 1;
-  font-weight: 800;
-}
-
-.stat-card-label {
-  margin: 10px 0 18px;
-  color: var(--text-primary);
-  font-size: 1rem;
-  font-weight: 800;
-}
-
-.stat-card-link {
-  color: var(--primary);
-  font-weight: 800;
-  font-size: 1rem;
-}
-
-.stat-card.orange {
-  background: #fffdfa;
-  border-color: var(--accent-orange-border);
-}
-
-.stat-card.orange .stat-card-value {
-  color: var(--accent-orange);
-}
-
-.stat-card.green {
-  background: var(--success-light);
-  border-color: var(--success-border);
-}
-
-.stat-card.green .stat-card-value {
-  color: var(--success);
-}
-
-.stat-card.red {
-  background: var(--danger-light);
-  border-color: var(--danger-border);
-}
-
-.stat-card.red .stat-card-value {
-  color: var(--danger);
-}
-
-.stat-card.blue {
-  background: var(--primary-light);
-  border-color: #b9cff2;
-}
-
-.stat-card.blue .stat-card-value {
-  color: var(--primary);
-}
-
-/* ------------------------------
-   9. DASHBOARD GRID
------------------------------- */
-
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(280px, 0.9fr);
-  gap: 28px;
-  align-items: stretch;
-}
-
-.dashboard-panel {
-  background: var(--white);
-  border: 2px solid var(--border);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-xs);
-  overflow: hidden;
-}
-
-.dashboard-panel-header {
-  padding: 20px 24px 0;
-}
-
-.dashboard-panel-body {
-  padding: 20px 24px 28px;
-}
-
-/* ------------------------------
-   10. TABLES
------------------------------- */
-
-.table-card {
-  overflow: hidden;
-}
-
-.table-responsive {
-  width: 100%;
-  overflow-x: auto;
-}
-
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: var(--white);
-  min-width: 720px;
-}
-
-.data-table th,
-.data-table td {
-  padding: 16px 18px;
-  text-align: left;
-  vertical-align: middle;
-  color: var(--text-primary);
-  border-bottom: 1px solid #eef2f7;
-}
-
-.data-table th {
-  background: var(--bg-table-head);
-  font-weight: 800;
-  font-size: 0.9rem;
-}
-
-.data-table td {
-  font-size: 0.95rem;
-}
-
-.data-table tr:last-child td {
-  border-bottom: 0;
-}
-
-.data-table tbody tr:hover {
-  background: #fbfdff;
-}
-
-.table-footer {
-  padding: 18px 24px 24px;
-  text-align: center;
-}
-
-/* ------------------------------
-   11. BUTTONS
+   7. BUTTONS
 ------------------------------ */
 
 .btn {
@@ -503,8 +245,8 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  border: 2px solid transparent;
+  /* gap: 8px; */
+  border: 1px solid transparent;
   border-radius: var(--radius-xs);
   padding: 10px 18px;
   font-weight: 800;
@@ -583,7 +325,7 @@ a {
 }
 
 /* ------------------------------
-   12. FORMS
+   8. FORMS
 ------------------------------ */
 
 .form-grid {
@@ -595,7 +337,8 @@ a {
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
+  margin-bottom: 10px;
 }
 
 .form-label {
@@ -609,7 +352,7 @@ a {
 .form-textarea {
   width: 100%;
   min-height: 46px;
-  border: 2px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-xs);
   background: var(--white);
   color: var(--text-primary);
@@ -630,6 +373,12 @@ a {
   box-shadow: 0 0 0 4px rgba(15, 86, 168, 0.12);
 }
 
+.form-group input.invalid,
+.form-group select.invalid,
+.form-group textarea.invalid {
+  border-color: var(--danger);
+}
+
 .form-textarea {
   min-height: 120px;
   resize: vertical;
@@ -647,7 +396,7 @@ a {
 }
 
 /* ------------------------------
-   13. BADGES / STATUS
+   9. BADGES / STATUS
 ------------------------------ */
 
 .badge {
@@ -693,149 +442,7 @@ a {
 }
 
 /* ------------------------------
-   14. CHART / VISUAL BLOCKS
------------------------------- */
-
-.chart-card {
-  min-height: 300px;
-  display: flex;
-  flex-direction: column;
-}
-
-.donut-chart-placeholder {
-  width: 180px;
-  height: 180px;
-  margin: 28px auto 22px;
-  border-radius: 50%;
-  background:
-    conic-gradient(
-      var(--primary) 0 62%,
-      #e6edf5 62% 100%
-    );
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
-.donut-chart-placeholder::after {
-  content: "";
-  width: 86px;
-  height: 86px;
-  background: var(--white);
-  border-radius: 50%;
-  position: absolute;
-}
-
-.donut-chart-value {
-  position: relative;
-  z-index: 1;
-  color: var(--text-primary);
-  font-size: 1.75rem;
-  font-weight: 900;
-}
-
-.legend {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 12px;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--text-primary);
-  font-size: 0.95rem;
-}
-
-.legend-dot {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--primary);
-}
-
-.legend-dot.muted {
-  background: #e6edf5;
-}
-
-/* ------------------------------
-   15. FILTERS / TOOLBAR
------------------------------- */
-
-.toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 18px;
-}
-
-.search-box {
-  width: 100%;
-  max-width: 360px;
-  position: relative;
-}
-
-.search-input {
-  width: 100%;
-  min-height: 44px;
-  border: 2px solid var(--border);
-  border-radius: var(--radius-xs);
-  padding: 10px 14px 10px 40px;
-  outline: none;
-}
-
-.search-input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(15, 86, 168, 0.1);
-}
-
-.search-icon {
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-muted);
-}
-
-/* ------------------------------
-   16. PAGINATION
------------------------------- */
-
-.pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  margin-top: 18px;
-}
-
-.page-btn {
-  width: 36px;
-  height: 36px;
-  border: 1px solid var(--border);
-  background: var(--white);
-  color: var(--text-primary);
-  border-radius: var(--radius-xs);
-  font-weight: 700;
-}
-
-.page-btn:hover {
-  background: var(--primary-light);
-  color: var(--primary);
-}
-
-.page-btn.active {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: var(--white);
-}
-
-/* ------------------------------
-   17. ALERTS
+   10. ALERTS
 ------------------------------ */
 
 .alert {
@@ -873,7 +480,7 @@ a {
 }
 
 /* ------------------------------
-   18. MODALS
+   11. MODALS
 ------------------------------ */
 
 .modal-backdrop {
@@ -916,7 +523,7 @@ a {
 
 
 /* ------------------------------
-   19. RESPONSIVE DESIGN
+   12. RESPONSIVE DESIGN
 ------------------------------ */
 
 /* Large tablets */
@@ -924,19 +531,6 @@ a {
   :root {
     --sidebar-width: 230px;
     --container-padding: 24px;
-  }
-
-  .stat-grid {
-    grid-template-columns: repeat(2, minmax(180px, 1fr));
-  }
-
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .date-range-picker {
-    min-width: 280px;
-    font-size: 1.05rem;
   }
 }
 
@@ -970,16 +564,6 @@ a {
     padding: 24px 20px 36px;
   }
 
-  .page-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .date-range-picker {
-    width: 100%;
-    min-width: 0;
-  }
-
   .form-grid {
     grid-template-columns: 1fr;
   }
@@ -1008,38 +592,6 @@ a {
     width: 40px;
     height: 40px;
     font-size: 1.1rem;
-  }
-
-  .stat-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .stat-card {
-    min-height: 130px;
-    padding: 20px;
-  }
-
-  .dashboard-panel-body,
-  .dashboard-panel-header,
-  .card-body {
-    padding-left: 18px;
-    padding-right: 18px;
-  }
-
-  .toolbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .search-box {
-    max-width: none;
-  }
-
-  .date-range-picker {
-    font-size: 1rem;
-    min-height: 52px;
-    padding: 10px 14px;
   }
 
   .modal-backdrop {
@@ -1071,20 +623,16 @@ a {
   .nav-link {
     width: 100%;
   }
-
-  .stat-card-value {
-    font-size: 2.3rem;
-  }
 }
 
 /* ------------------------------
-   20. ACCESSIBILITY
+   13. ACCESSIBILITY
 ------------------------------ */
 
-:focus-visible {
+/* :focus-visible {
   outline: 3px solid rgba(15, 86, 168, 0.45);
   outline-offset: 2px;
-}
+} */
 
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -1098,26 +646,18 @@ a {
 }
 
 /* ------------------------------
-   21. PRINT
+   14. PRINT
 ------------------------------ */
 
 @media print {
   .sidebar,
   .topbar,
-  .btn,
-  .toolbar,
-  .pagination {
+  .btn {
     display: none !important;
   }
 
   .page-content {
     padding: 0;
-  }
-
-  .card,
-  .dashboard-panel {
-    box-shadow: none;
-    border-color: #cfd8e3;
   }
 
   body {

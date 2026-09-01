@@ -1,6 +1,6 @@
 .app-footer {
   border-top: 2px solid var(--border);
-  background: #071f4b;
+  background: var(--primary-extra-dark);
   padding: 10px;
   display: flex;
   align-items: center;

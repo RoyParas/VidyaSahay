@@ -1,0 +1,18 @@
+<div class="toast-wrap" aria-live="polite" aria-atomic="true">
+  <div
+    *ngFor="let toast of toastService.toasts(); trackBy: trackByToastId"
+    class="toast-item"
+    [ngClass]="getToastClass(toast.type)"
+  >
+    <div class="toast-icon">{{ toast.type.charAt(0).toUpperCase() }}</div>
+
+    <div class="toast-content">
+      <strong>{{ toast.title }}</strong>
+      <p>{{ toast.message }}</p>
+    </div>
+
+    <button type="button" class="toast-close" (click)="toastService.remove(toast.id)" aria-label="Dismiss toast">
+      ×
+    </button>
+  </div>
+</div>

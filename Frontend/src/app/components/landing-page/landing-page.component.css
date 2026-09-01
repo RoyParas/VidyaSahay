@@ -1,10 +1,10 @@
 .landing-page {
-  background: #fff;
-  color: #172033;
+  background: var(--white);
+  color: var(--text-primary);
+  overflow: hidden;
 }
 
 .landing-hero {
-  min-height: 510px;
   background:
     radial-gradient(
       circle at 30% 45%,
@@ -44,7 +44,7 @@
   letter-spacing: 0.12em;
   font-size: 11px;
   font-weight: 900;
-  color: #0d6fd3;
+  color: var(--info);
 }
 .hero-kicker {
   color: #9cd8ff;
@@ -99,19 +99,24 @@
   background: linear-gradient(135deg, #0d4fa3, #0daf89);
   display: grid;
   place-items: center;
-  color: #fff;
+  color: var(--white);
   font-size: 72px;
   box-shadow: 0 28px 80px rgba(0, 0, 0, 0.3);
+}
+.hero-mark svg {
+  width: 58%;
+  height: 58%;
 }
 .landing-strip {
   padding: 14px clamp(22px, 6vw, 85px);
   display: flex;
   gap: 24px;
-  border-bottom: 1px solid #dce6f3;
+  border-bottom: 1px solid var(--border);
   font-size: 12px;
+  flex-wrap: wrap;
 }
 .landing-strip strong {
-  color: #0d4fa3;
+  color: var(--primary);
 }
 .landing-section {
   padding: 70px clamp(24px, 7vw, 110px);
@@ -125,12 +130,12 @@
   display: grid;
   grid-template-columns: 1.4fr 1fr;
   gap: 50px;
-  background: #f8fbff;
+  background: var(--bg-muted);
 }
 .intro p {
   font-size: 16px;
   line-height: 1.7;
-  color: #526176;
+  color: var(--text-secondary);
 }
 .feature-pills {
   display: flex;
@@ -141,28 +146,55 @@
 .feature-pills span {
   padding: 8px 12px;
   border-radius: 99px;
-  background: #eaf2ff;
-  color: #0d4fa3;
+  background: var(--primary-soft);
+  color: var(--primary);
   font-weight: 800;
 }
-.intro-visual {
-  display: grid;
-  gap: 15px;
-}
-.visual-card {
+.registration-note {
   padding: 25px;
   border-radius: 15px;
-  background: #fff;
-  border: 1px solid #dce6f3;
+  border: 1px solid var(--border);
   box-shadow: 0 12px 35px rgba(13, 79, 163, 0.08);
 }
-.visual-card b {
-  display: block;
-  color: #0d4fa3;
-  font-size: 28px;
+.registration-note h3 {
+  color: var(--primary);
+  font-size: 22px;
+  line-height: 1.25;
+  margin: 12px 0;
 }
-.visual-card span {
-  color: #64748b;
+.registration-note p,
+.capability-grid article p,
+.service-grid article p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+.pan-india p {
+  color: #dfebf8;
+  line-height: 1.6;
+}
+.admin-contact {
+  display: grid;
+  gap: 12px;
+}
+.contact-item {
+  display: grid;
+  gap: 2px;
+}
+.contact-label {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.contact-item strong,
+.contact-item a {
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+.contact-item a {
+  color: var(--primary);
+  font-weight: 800;
 }
 .capability-grid,
 .service-grid {
@@ -173,25 +205,29 @@
 .capability-grid article,
 .service-grid article {
   padding: 26px;
-  border: 1px solid #dce6f3;
+  border: 1px solid var(--border);
   border-radius: 14px;
-  background: #fff;
+  background: var(--white);
   box-shadow: 0 8px 25px rgba(15, 23, 42, 0.06);
 }
 .cap-icon {
   width: 50px;
   height: 50px;
   border-radius: 12px;
-  background: #eaf2ff;
+  background: var(--primary-soft);
   display: grid;
   place-items: center;
-  font-size: 24px;
+  color: var(--primary);
+}
+.cap-icon svg {
+  width: 26px;
+  height: 26px;
 }
 .pan-india {
   margin: 0 clamp(24px, 4vw, 68px);
   border-radius: 14px;
   background: #14269c;
-  color: #fff;
+  color: var(--white);
   display: grid;
   grid-template-columns: 1.2fr 1fr;
   gap: 30px;
@@ -207,38 +243,140 @@
   place-items: center;
   position: relative;
 }
-.india-graphic span {
-  font-size: 76px;
-  font-weight: 900;
-  color: rgba(255, 255, 255, 0.14);
-}
-.map-dots {
+.map{
   position: absolute;
-  width: 190px;
-  height: 230px;
-  background: radial-gradient(circle, #fff 0 2px, transparent 3px);
-  background-size: 18px 18px;
-  clip-path: polygon(
-    47% 0,
-    63% 13%,
-    64% 25%,
-    81% 34%,
-    73% 45%,
-    92% 58%,
-    69% 70%,
-    61% 100%,
-    46% 78%,
-    30% 69%,
-    21% 51%,
-    5% 37%,
-    27% 27%,
-    31% 10%
-  );
+  width: 80%;
+}
+.map img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
 }
 .service-grid {
   grid-template-columns: repeat(4, 1fr);
 }
 .service-grid b {
   font-size: 28px;
-  color: #0d4fa3;
+  color: var(--primary);
+}
+
+@media (max-width: 900px) {
+  .hero-art {
+    display: none;
+  }
+
+  .hero-overlay {
+    grid-template-columns: 1fr;
+    min-height: auto;
+    padding-top: 72px;
+    padding-bottom: 56px;
+  }
+
+  .hero-content {
+    max-width: 760px;
+  }
+
+  .intro {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .capability-grid,
+  .service-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pan-india {
+    position: relative;
+    display: block;
+    min-height: 330px;
+  }
+
+  .india-graphic {
+    position: absolute;
+    inset: 0;
+    min-height: 0;
+    opacity: 0.2;
+    pointer-events: none;
+  }
+
+  .pan-india > div:first-child {
+    position: relative;
+    z-index: 1;
+  }
+
+  .map {
+    position: relative;
+    width: min(100%, 420px);
+    max-width: 100%;
+  }
+
+  .map img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+}
+
+@media (max-width: 560px) {
+  .landing-hero,
+  .hero-overlay {
+    min-height: 0;
+  }
+
+  .hero-overlay {
+    gap: 28px;
+    padding: 48px 20px 40px;
+  }
+
+  .hero-content h1 {
+    font-size: clamp(34px, 11vw, 48px);
+  }
+
+  .hero-content p {
+    font-size: 16px;
+  }
+
+  .hero-buttons,
+  .hero-buttons .landing-cta {
+    width: 100%;
+  }
+
+  .landing-strip {
+    padding: 14px 20px;
+    gap: 4px 12px;
+  }
+
+  .landing-section {
+    padding: 48px 20px;
+  }
+
+  .landing-section h2,
+  .pan-india h2 {
+    font-size: 27px;
+  }
+
+  .capability-grid,
+  .service-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .capability-grid article,
+  .service-grid article,
+  .registration-note {
+    padding: 20px;
+  }
+
+  .pan-india {
+    margin: 0 20px;
+    padding: 38px 22px;
+  }
+
+  .pan-india .landing-cta {
+    width: 100%;
+  }
+
+  .india-graphic {
+    min-height: 0;
+  }
 }

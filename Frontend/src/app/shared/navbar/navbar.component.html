@@ -1,48 +1,55 @@
 <header class="topbar app-navbar">
   <div class="navbar-left">
     <button
+      *ngIf="isLoggedIn && showSidebarToggle"
       class="mobile-menu-btn"
       type="button"
       aria-label="Open menu"
       (click)="onToggleSidebar()"
     >
-      ☰
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M4 6h16M4 12h16M4 18h16"></path>
+      </svg>
     </button>
 
-    <div class="navbar-page-title" *ngIf="pageTitle">
-      {{ pageTitle }}
-    </div>
+    <a class="navbar-logo-link" routerLink="/" aria-label="Go to home page">
+      <img class="navbar-logo" [src]="logoPath" alt="VidyaSahay" />
+    </a>
   </div>
 
-  <div class="topbar-actions navbar-actions">
-    <button
-      class="icon-button notification-button"
-      type="button"
-      routerLink="/notifications"
-      aria-label="Notifications"
-    >
-      🔔
-      <span
-        class="notification-dot"
-        *ngIf="notificationCount > 0"
-      ></span>
-    </button>
+  <div class="topbar-actions navbar-actions navbar-guest-actions" *ngIf="!isLoggedIn">
+    <a class="btn btn-secondary navbar-quick-link" routerLink="/login">Login</a>
+    <a class="btn btn-primary navbar-quick-link" routerLink="/register">Register</a>
+  </div>
 
-    <a class="icon-button" routerLink="/messages" aria-label="Messages">
-      ✉
-    </a>
+  <div class="topbar-actions navbar-actions navbar-user-actions" *ngIf="isLoggedIn">
+    <div class="user-menu-wrap">
+      <button class="user-menu-button" type="button" (click)="toggleProfileMenu()" [attr.aria-expanded]="isProfileMenuOpen">
+        <span class="user-avatar">{{ userInitial }}</span>
+        <span class="user-details">
+          <span class="user-name">{{ userName }}</span>
+          <small>{{ userRole }}</small>
+        </span>
+        <svg class="dropdown-caret" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M6 9l6 6 6-6"></path>
+        </svg>
+      </button>
 
-    <a class="user-menu" routerLink="/profile">
-      <div class="user-avatar">
-        {{ userName.charAt(0) }}
+      <div class="profile-dropdown" *ngIf="isProfileMenuOpen">
+        <button type="button" class="profile-dropdown-item" (click)="goToProfile()">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5Z"></path>
+          </svg>
+          <span>My Profile</span>
+        </button>
+
+        <button type="button" class="profile-dropdown-item" (click)="logout()">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M10 17v-2H4V9h6V7l4 5-4 5Zm1 4h7a2 2 0 0 0 2-2v-4h-2v4h-7v2ZM18 5h-7V3h7a2 2 0 0 1 2 2v4h-2V5Z"></path>
+          </svg>
+          <span>Logout</span>
+        </button>
       </div>
-
-      <div class="user-details">
-        <span class="user-name">{{ userName }}</span>
-        <small>{{ userRole }}</small>
-      </div>
-
-      <span class="dropdown-caret">⌄</span>
-    </a>
+    </div>
   </div>
 </header>

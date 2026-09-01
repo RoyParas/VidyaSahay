@@ -5,6 +5,10 @@
   background: var(--bg-main);
 }
 
+.page-content {
+  padding: 28px var(--container-padding) 40px;
+}
+
 /* Tablets */
 @media (max-width: 900px) {
   .main-layout {

@@ -1,56 +1,128 @@
-<a class="auth-home" routerLink="/">← Back to Home</a>
-<div class="auth-shell">
-  <div class="auth-brand-panel">
-    <img [src]="logoPath" alt="VidyaSahay" />
-    <h2>Start the VidyaSahay journey</h2>
-  </div>
-  <div class="auth-card register-card">
-    <h1>Student Registration</h1>
-    <form id="registrationForm" novalidate>
-      <div class="auth-grid">
-        <div class="field">
-          <label>Full Name *</label
-          ><input name="fullName" autocomplete="name" required />
+<div class="auth-body">
+  <div class="auth-shell">
+    <div class="auth-brand-panel">
+      <img [src]="logoPath" alt="VidyaSahay" />
+      <h2>Student Registration</h2>
+    </div>
+
+    <div class="auth-card">
+      <!-- <h1>Student Registration</h1> -->
+
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" novalidate>
+        <div class="auth-grid">
+          <div class="form-group">
+            <label for="fullName" class="form-label">Full Name *</label>
+            <input
+              class="form-control"
+              id="fullName"
+              type="text"
+              formControlName="fullName"
+              autocomplete="name"
+              [class.invalid]="isInvalid('fullName')"
+            />
+            <div class="form-error" *ngIf="fullNameControl?.errors && (fullNameControl?.touched || submitted)">
+              <span *ngIf="fullNameControl?.errors?.['required']">Full name is required.</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="email" class="form-label">Email Address *</label>
+            <input
+              class="form-control"
+              id="email"
+              type="email"
+              formControlName="email"
+              autocomplete="email"
+              [class.invalid]="isInvalid('email')"
+            />
+            <div class="form-error" *ngIf="emailControl?.errors && (emailControl?.touched || submitted)">
+              <span *ngIf="emailControl?.errors?.['required']">Email is required.</span>
+              <span *ngIf="emailControl?.errors?.['email']">Enter a valid email address.</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="mobile" class="form-label">Mobile Number *</label>
+            <input
+              class="form-control"
+              id="mobile"
+              type="text"
+              formControlName="mobile"
+              inputmode="numeric"
+              maxlength="10"
+              [class.invalid]="isInvalid('mobile')"
+            />
+            <div class="form-error" *ngIf="mobileControl?.errors && (mobileControl?.touched || submitted)">
+              <span *ngIf="mobileControl?.errors?.['required']">Mobile number is required.</span>
+              <span *ngIf="mobileControl?.errors?.['pattern']">Enter a valid 10-digit mobile number.</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="dob" class="form-label">Date of Birth *</label>
+            <input
+              class="form-control"
+              id="dob"
+              type="date"
+              formControlName="dob"
+              [class.invalid]="isInvalid('dob')"
+            />
+            <div class="form-error" *ngIf="dobControl?.errors && (dobControl?.touched || submitted)">
+              <span *ngIf="dobControl?.errors?.['required']">Date of birth is required.</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="password" class="form-label">Password *</label>
+            <input
+              class="form-control"
+              id="password"
+              type="password"
+              formControlName="password"
+              autocomplete="new-password"
+              [class.invalid]="isInvalid('password')"
+            />
+            <div class="form-error" *ngIf="passwordControl?.errors && (passwordControl?.touched || submitted)">
+              <span *ngIf="passwordControl?.errors?.['required']">Password is required.</span>
+              <span *ngIf="passwordControl?.errors?.['minlength']">Password must be at least 8 characters.</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword" class="form-label">Confirm Password *</label>
+            <input
+              class="form-control"
+              id="confirmPassword"
+              type="password"
+              formControlName="confirmPassword"
+              autocomplete="new-password"
+              [class.invalid]="isInvalid('confirmPassword') || isConfirmPasswordMismatch()"
+            />
+            <div
+              class="form-error"
+              *ngIf="isInvalid('confirmPassword') || isConfirmPasswordMismatch()"
+            >
+              <span *ngIf="confirmPasswordControl?.errors?.['required']">Confirm password is required.</span>
+              <span *ngIf="isConfirmPasswordMismatch()">Passwords do not match.</span>
+            </div>
+          </div>
         </div>
-        <div class="field">
-          <label>Email Address *</label
-          ><input name="email" type="email" autocomplete="email" required />
+
+        <label class="auth-consent form-label">
+          <input type="checkbox" formControlName="terms" />
+          I agree to the portal terms and confirm that the details are accurate.
+        </label>
+        <div class="form-error" *ngIf="termsControl?.errors && (termsControl?.touched || submitted)">
+          <span *ngIf="termsControl?.errors?.['required']">You must accept the terms.</span>
         </div>
-        <div class="field">
-          <label>Mobile Number *</label
-          ><input name="mobile" inputmode="numeric" maxlength="10" required />
-        </div>
-        <div class="field">
-          <label>Date of Birth *</label
-          ><input name="dob" type="date" required />
-        </div>
-        <div class="field">
-          <label>Password *</label
-          ><input
-            name="password"
-            type="password"
-            minlength="8"
-            autocomplete="new-password"
-            required
-          />
-        </div>
-        <div class="field">
-          <label>Confirm Password *</label
-          ><input
-            name="confirmPassword"
-            type="password"
-            autocomplete="new-password"
-            required
-          />
-        </div>
-      </div>
-      <label class="auth-consent"
-        ><input name="terms" type="checkbox" required /> I agree to the portal
-        terms and confirm that the details are accurate.</label
-      ><button class="btn primary" type="submit">Register</button>
-    </form>
-    <p class="auth-switch">
-      Already registered? <a routerLink="/login">Login</a>
-    </p>
+
+        <button class="btn btn-primary" type="submit">Register</button>
+      </form>
+      <a class="btn btn-secondary" routerLink="/">Back to Home</a>
+
+      <p class="auth-switch">
+        Already registered? <a routerLink="/login">Login</a>
+      </p>
+    </div>
   </div>
 </div>

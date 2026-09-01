@@ -7,6 +7,18 @@ import { PublicLayoutComponent } from './layouts/public-layout/public-layout.com
 
 export const routes: Routes = [
   {
+    path: 'login',
+    loadComponent: () =>
+      import('./components/auth/login/login.component')
+        .then(c => c.LoginComponent)
+  },
+  {
+    path: 'register',
+    loadComponent: () =>
+      import('./components/auth/register/register.component')
+        .then(c => c.RegisterComponent)
+  },
+  {
     path: '',
     component: PublicLayoutComponent,
     children: [
@@ -15,18 +27,6 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./components/landing-page/landing-page.component')
             .then(c => c.LandingPageComponent)
-      },
-      {
-        path: 'login',
-        loadComponent: () =>
-          import('./components/auth/login/login.component')
-            .then(c => c.LoginComponent)
-      },
-      {
-        path: 'register',
-        loadComponent: () =>
-          import('./components/auth/register/register.component')
-            .then(c => c.RegisterComponent)
       }
     ]
   },

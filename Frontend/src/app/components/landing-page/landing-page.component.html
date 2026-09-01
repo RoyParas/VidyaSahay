@@ -11,23 +11,28 @@
         <div class="hero-buttons">
           <a class="btn primary landing-cta" routerLink="/register"
             >Register as Student</a
-          ><a class="btn landing-cta secondary" routerLink="/login"
-            >Login to Portal</a
-          >
+          ><a class="btn landing-cta secondary" routerLink="/login">Login</a>
         </div>
       </div>
-      <div class="hero-art">
+      <div class="hero-art" aria-hidden="true">
         <div class="hero-orbit orbit-one"></div>
         <div class="hero-orbit orbit-two"></div>
-        <div class="hero-mark">✓</div>
+        <div class="hero-mark">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M12 3 3 7.5 12 12l7-3.5V15h2V7.5L12 3Zm-5 9.6v4.1c0 .8.4 1.5 1.1 1.9 2.4 1.4 5.3 1.4 7.8 0 .7-.4 1.1-1.1 1.1-1.9v-4.1L12 15l-5-2.4Z"
+              fill="currentColor"
+            />
+          </svg>
+        </div>
       </div>
     </div>
   </section>
   <section class="landing-strip">
-    <strong>What’s New</strong
+    <strong>What's New</strong
     ><span
-      >Student registration, DigiLocker verification, scholarship eligibility
-      and education-loan workflows are available in one place.</span
+      >Student registration, scholarship eligibility and education-loan
+      workflows are available in one place.</span
     >
   </section>
   <section class="landing-section intro">
@@ -36,30 +41,49 @@
       <h2>Education support through one connected digital experience</h2>
       <p>
         VidyaSahay brings application, verification, review, approval and
-        disbursement tracking together with role-based experiences for every
-        participant.
+        disbursement tracking together in one connected journey.
       </p>
       <div class="feature-pills">
         <span>Secure access</span><span>Transparent tracking</span
         ><span>Dynamic eligibility</span><span>Government-style workflows</span>
       </div>
     </div>
-    <div class="intro-visual">
-      <div class="visual-card">
-        <b>5 Roles</b
-        ><span>Government, Institute, Admin, Student and Bank</span>
+    <aside class="registration-note">
+      <span class="section-kicker">Partner onboarding</span>
+      <h3>Banks and institutes are registered by the administrator</h3>
+      <p>
+        If your organisation needs access to VidyaSahay, contact the platform
+        administrator to request registration and account setup.
+      </p>
+      <div class="admin-contact">
+        <div class="contact-item">
+          <span class="contact-label">Name</span
+          ><strong>VidyaSahay Administration</strong>
+        </div>
+        <div class="contact-item">
+          <span class="contact-label">Email</span
+          ><a href="mailto:admin@vidyasahay.gov.in">admin&#64;vidyasahay.gov.in</a>
+        </div>
+        <div class="contact-item">
+          <span class="contact-label">Phone</span
+          ><a href="tel:+910000000000">+91 00000 00000</a>
+        </div>
       </div>
-      <div class="visual-card">
-        <b>1 Portal</b><span>Shared design system and connected journeys</span>
-      </div>
-    </div>
+    </aside>
   </section>
   <section class="landing-section">
     <span class="section-kicker">Our expanded capabilities</span>
     <h2>Purpose-built experiences for the full education ecosystem</h2>
     <div class="capability-grid">
       <article>
-        <div class="cap-icon">🎓</div>
+        <div class="cap-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M12 3 3 7.5 12 12l7-3.5V15h2V7.5L12 3Zm-5 9.6v4.1c0 .8.4 1.5 1.1 1.9 2.4 1.4 5.3 1.4 7.8 0 .7-.4 1.1-1.1 1.1-1.9v-4.1L12 15l-5-2.4Z"
+              fill="currentColor"
+            />
+          </svg>
+        </div>
         <h3>Scholarship Discovery</h3>
         <p>
           Students check eligibility, review scheme details and submit guided
@@ -67,7 +91,12 @@
         </p>
       </article>
       <article>
-        <div class="cap-icon">₹</div>
+        <div class="cap-icon" aria-hidden="true">
+          <svg viewBox="0 0 18 18">
+            <path d="M4 3.06h2.726c1.22 0 2.12.575 2.325 1.724H4v1.051h5.051C8.855 7.001 8 7.558 6.788 7.558H4v1.317L8.437 14h2.11L6.095 8.884h.855c2.316-.018 3.465-1.476 3.688-3.049H12V4.784h-1.345c-.08-.778-.357-1.335-.793-1.732H12V2H4z" fill="currentColor"/>
+          </svg>
+
+        </div>
         <h3>Education Loans</h3>
         <p>
           Explore eligible loan schemes, complete applications and track
@@ -75,7 +104,14 @@
         </p>
       </article>
       <article>
-        <div class="cap-icon">✓</div>
+        <div class="cap-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="m9.2 16.6-4.3-4.3 1.4-1.4 2.9 2.9 8.5-8.5 1.4 1.4-9.9 9.9Z"
+              fill="currentColor"
+            />
+          </svg>
+        </div>
         <h3>Verification Workflows</h3>
         <p>
           Institutions, government reviewers and banks process applications with
@@ -92,13 +128,10 @@
         A consistent, responsive platform designed to support learners,
         institutions and financial partners across regions.
       </p>
-      <a class="btn landing-cta secondary" href="register.html"
-        >Start Registration</a
-      >
+      <a class="btn landing-cta secondary" routerLink="/register">Start Registration</a>
     </div>
     <div class="india-graphic">
-      <span>INDIA</span>
-      <div class="map-dots"></div>
+      <div class="map"><img [src]="indiaMapPath" alt="India map" /></div>
     </div>
   </section>
   <section class="landing-section">
