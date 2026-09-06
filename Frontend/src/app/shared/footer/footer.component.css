@@ -14,13 +14,6 @@
   align-items: center;
   gap: 12px;
 }
-.footer-brand img {
-  width: 60px;
-  height: 36px;
-  object-fit: contain;
-  background: var(--white);
-  border-radius: 8px;
-}
 .footer-brand p,
 .app-footer > p {
   margin: 3px 0;

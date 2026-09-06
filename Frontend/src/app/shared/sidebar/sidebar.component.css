@@ -67,13 +67,11 @@
   display: flex;
   gap: 12px;
   align-items: center;
-  margin-bottom: 24px;
   text-decoration: none;
 }
 
 .brand-logo-only {
   justify-content: center;
-  margin-bottom: 24px;
 }
 
 .sidebar-logo {
@@ -226,9 +224,7 @@
   .sidebar-mobile-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 26px;
+    justify-content: end;
   }
 
   .brand.compact {

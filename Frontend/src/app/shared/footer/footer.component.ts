@@ -10,5 +10,4 @@ import { CommonModule } from '@angular/common';
 })
 export class FooterComponent {
   currentYear = new Date().getFullYear();
-  logoPath = 'VidyaSahay_Logo.png';
 }

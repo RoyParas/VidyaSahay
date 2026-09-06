@@ -140,6 +140,12 @@
 
 /* On smaller screens navbar info moves into sidebar */
 @media (max-width: 900px) {
+  .navbar-left {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+
   .mobile-menu-btn {
     display: inline-flex;
     align-items: center;

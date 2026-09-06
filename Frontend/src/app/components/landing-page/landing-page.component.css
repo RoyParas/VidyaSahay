@@ -226,7 +226,7 @@
 .pan-india {
   margin: 0 clamp(24px, 4vw, 68px);
   border-radius: 14px;
-  background: #14269c;
+  background: var(--primary);
   color: var(--white);
   display: grid;
   grid-template-columns: 1.2fr 1fr;

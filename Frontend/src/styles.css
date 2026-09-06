@@ -245,7 +245,6 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  /* gap: 8px; */
   border: 1px solid transparent;
   border-radius: var(--radius-xs);
   padding: 10px 18px;
@@ -327,6 +326,10 @@ a {
 /* ------------------------------
    8. FORMS
 ------------------------------ */
+
+.required {
+  color: var(--danger);
+}
 
 .form-grid {
   display: grid;
@@ -545,10 +548,6 @@ a {
     min-width: 0;
   }
 
-  .portal-content {
-    padding-top: 22px;
-  }
-
   .nav-link {
     min-height: 40px;
     padding: 10px 12px;
@@ -558,10 +557,6 @@ a {
   .topbar {
     height: var(--topbar-height);
     padding: 16px 20px;
-  }
-
-  .page-content {
-    padding: 24px 20px 36px;
   }
 
   .form-grid {
@@ -616,10 +611,6 @@ a {
 
 /* Very small devices */
 @media (max-width: 420px) {
-  .page-content {
-    padding: 20px 14px 32px;
-  }
-
   .nav-link {
     width: 100%;
   }

@@ -364,7 +364,7 @@ Stores all application headers in one table.
 - `student_id` FK -> `students.id`
 - `application_type` enum: `loan`, `scholarship`
 - `scheme_id`
-- `scheme_type` enum: `loan_scheme`, `scholarship_scheme`
+- `approved_amount`
 - `submitted_at` nullable
 - `created_at`
 - `updated_at`
@@ -426,6 +426,7 @@ Stores shared disbursement records for both loans and scholarships.
 - `student_id` FK -> `students.id`
 - `disbursed_by_user_id` FK -> `users.id`
 - `amount`
+- `disbursement_status` enum: `pending`, `disbursed`
 - `disbursement_date`
 - `created_at`
 - `updated_at`

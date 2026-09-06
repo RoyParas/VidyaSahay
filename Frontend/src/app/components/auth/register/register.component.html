@@ -6,27 +6,41 @@
     </div>
 
     <div class="auth-card">
-      <!-- <h1>Student Registration</h1> -->
 
       <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" novalidate>
         <div class="auth-grid">
           <div class="form-group">
-            <label for="fullName" class="form-label">Full Name *</label>
+            <label for="firstName" class="form-label">First Name <span class = "required">*</span></label>
             <input
               class="form-control"
-              id="fullName"
+              id="firstName"
               type="text"
-              formControlName="fullName"
+              formControlName="firstName"
               autocomplete="name"
-              [class.invalid]="isInvalid('fullName')"
+              [class.invalid]="isInvalid('firstName')"
             />
-            <div class="form-error" *ngIf="fullNameControl?.errors && (fullNameControl?.touched || submitted)">
-              <span *ngIf="fullNameControl?.errors?.['required']">Full name is required.</span>
+            <div class="form-error" *ngIf="firstNameControl?.errors && (firstNameControl?.touched || submitted)">
+              <span *ngIf="firstNameControl?.errors?.['required']">Full name is required.</span>
             </div>
           </div>
 
           <div class="form-group">
-            <label for="email" class="form-label">Email Address *</label>
+            <label for="lastName" class="form-label">Last Name <span class = "required">*</span></label>
+            <input
+              class="form-control"
+              id="fullName"
+              type="text"
+              formControlName="lastName"
+              autocomplete="name"
+              [class.invalid]="isInvalid('lastName')"
+            />
+            <div class="form-error" *ngIf="lastNameControl?.errors && (lastNameControl?.touched || submitted)">
+              <span *ngIf="lastNameControl?.errors?.['required']">Full name is required.</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="email" class="form-label">Email Address <span class = "required">*</span></label>
             <input
               class="form-control"
               id="email"
@@ -42,7 +56,7 @@
           </div>
 
           <div class="form-group">
-            <label for="mobile" class="form-label">Mobile Number *</label>
+            <label for="mobile" class="form-label">Mobile Number <span class = "required">*</span></label>
             <input
               class="form-control"
               id="mobile"
@@ -59,21 +73,7 @@
           </div>
 
           <div class="form-group">
-            <label for="dob" class="form-label">Date of Birth *</label>
-            <input
-              class="form-control"
-              id="dob"
-              type="date"
-              formControlName="dob"
-              [class.invalid]="isInvalid('dob')"
-            />
-            <div class="form-error" *ngIf="dobControl?.errors && (dobControl?.touched || submitted)">
-              <span *ngIf="dobControl?.errors?.['required']">Date of birth is required.</span>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="password" class="form-label">Password *</label>
+            <label for="password" class="form-label">Password <span class = "required">*</span></label>
             <input
               class="form-control"
               id="password"
@@ -89,7 +89,7 @@
           </div>
 
           <div class="form-group">
-            <label for="confirmPassword" class="form-label">Confirm Password *</label>
+            <label for="confirmPassword" class="form-label">Confirm Password <span class = "required">*</span></label>
             <input
               class="form-control"
               id="confirmPassword"
@@ -110,7 +110,7 @@
 
         <label class="auth-consent form-label">
           <input type="checkbox" formControlName="terms" />
-          I agree to the portal terms and confirm that the details are accurate.
+          I agree to the terms and confirm that the details are accurate.<span class = "required">*</span>
         </label>
         <div class="form-error" *ngIf="termsControl?.errors && (termsControl?.touched || submitted)">
           <span *ngIf="termsControl?.errors?.['required']">You must accept the terms.</span>

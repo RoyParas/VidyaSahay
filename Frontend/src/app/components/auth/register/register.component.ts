@@ -27,10 +27,10 @@ export class RegisterComponent {
 
   registerForm = this.fb.group(
     {
-      fullName: ['', [Validators.required]],
+      firstName: ['', [Validators.required]],
+      lastName: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
       mobile: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
-      dob: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(8)]],
       confirmPassword: ['', [Validators.required]],
       terms: [false, [Validators.requiredTrue]],
@@ -38,8 +38,12 @@ export class RegisterComponent {
     { validators: passwordMatchValidator },
   );
 
-  get fullNameControl() {
-    return this.registerForm.get('fullName');
+  get firstNameControl() {
+    return this.registerForm.get('firstName');
+  }
+
+  get lastNameControl() {
+    return this.registerForm.get('lastName');
   }
 
   get emailControl() {
@@ -48,10 +52,6 @@ export class RegisterComponent {
 
   get mobileControl() {
     return this.registerForm.get('mobile');
-  }
-
-  get dobControl() {
-    return this.registerForm.get('dob');
   }
 
   get passwordControl() {
@@ -79,10 +79,10 @@ export class RegisterComponent {
 
   isInvalid(
     controlName:
-      | 'fullName'
+      | 'firstName'
+      | 'lastName'
       | 'email'
       | 'mobile'
-      | 'dob'
       | 'password'
       | 'confirmPassword'
       | 'terms',

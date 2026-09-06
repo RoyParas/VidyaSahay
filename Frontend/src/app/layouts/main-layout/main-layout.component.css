@@ -14,6 +14,10 @@
   .main-layout {
     grid-template-columns: 1fr;
   }
+
+  .page-content {
+    padding: 24px 20px 36px;
+  }
 }
 
 /* Desktop follows the image layout */
@@ -21,6 +25,12 @@
   .portal-layout {
     display: grid;
     grid-template-columns: var(--sidebar-width) 1fr;
+  }
+}
+
+@media(max-width: 420px) {
+  .page-content {
+    padding: 20px 14px 32px;
   }
 }
 
