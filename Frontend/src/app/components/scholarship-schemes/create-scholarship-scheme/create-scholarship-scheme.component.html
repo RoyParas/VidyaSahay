@@ -1,0 +1,70 @@
+<main class="scheme-page">
+  <header class="page-heading">
+    <div><p class="eyebrow">GOVERNMENT PORTAL · SCHEME SETUP</p><h1>Create a scholarship scheme</h1><p>Set the scholarship, eligibility requirements and award details.</p></div>
+    <span class="secure-note">Draft is submitted when you finish</span>
+  </header>
+
+  <nav class="wizard-steps" aria-label="Form progress">
+    @for (label of steps; track label; let i = $index) {
+      <div class="step" [class.active]="step === i" [class.complete]="step > i"><span class="step-number">{{ step > i ? '✓' : i + 1 }}</span><span>{{ label }}</span></div>
+    }
+  </nav>
+
+  @if (loadError) { <p class="alert error" role="alert">{{ loadError }}</p> }
+  @if (submitError) { <p class="alert error" role="alert">{{ submitError }}</p> }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    @if (step === 0) {
+      <section class="form-card" aria-labelledby="step-title">
+        <div class="section-heading"><span class="section-icon">01</span><div><h2 id="step-title">Scheme details</h2><p>Name the program and set its application period.</p></div></div>
+        <div class="field-grid">
+          <label class="field full"><span>Scheme name <b>*</b></span><input formControlName="schemeName" maxlength="200" placeholder="e.g. National Merit Scholarship"><small>Up to 200 characters.</small>@if (isInvalid('schemeName')) { <em>Enter a scheme name.</em> }</label>
+          <label class="field"><span>Scholarship type <b>*</b></span><select formControlName="scholarshipType"><option value="">Choose a type</option>@for (type of scholarshipTypes; track type) { <option [value]="type">{{ type === 'MERIT_BASED' ? 'Merit based' : 'Category based' }}</option> }</select>@if (isInvalid('scholarshipType')) { <em>Select a scholarship type.</em> }</label>
+          <label class="field"><span>Academic year <b>*</b></span><input formControlName="academicYear" placeholder="2026-2027" maxlength="9"><small>Use the format YYYY-YYYY.</small>@if (isInvalid('academicYear')) { <em>Enter an academic year like 2026-2027.</em> }</label>
+          <label class="field"><span>Start date <b>*</b></span><input type="date" formControlName="startDate">@if (isInvalid('startDate')) { <em>Choose a start date.</em> }</label>
+          <label class="field"><span>End date <b>*</b></span><input type="date" formControlName="endDate">@if (isInvalid('endDate')) { <em>{{ form.get('endDate')?.hasError('dateOrder') ? 'End date must be on or after the start date.' : 'Choose an end date.' }}</em> }</label>
+        </div>
+      </section>
+    }
+
+    @if (step === 1) {
+      <section class="form-card" aria-labelledby="step-title">
+        <div class="section-heading"><span class="section-icon">02</span><div><h2 id="step-title">Eligibility and documents</h2><p>Define age, income and academic thresholds for applicants.</p></div></div>
+        <div class="field-grid">
+          <label class="field"><span>Minimum applicant age <b>*</b></span><input type="number" min="0" max="100" formControlName="applierMinAge">@if (isInvalid('applierMinAge')) { <em>Age must be between 0 and 100.</em> }</label>
+          <label class="field"><span>Maximum applicant age <b>*</b></span><input type="number" min="0" max="100" formControlName="applierMaxAge">@if (isInvalid('applierMaxAge')) { <em>{{ form.get('applierMaxAge')?.hasError('range') ? 'Must be at least the minimum age.' : 'Age must be between 0 and 100.' }}</em> }</label>
+          <label class="field"><span>Maximum family annual income (₹) <b>*</b></span><input type="number" min="0" step="1" formControlName="maxFamilyAnnualIncome" placeholder="0">@if (isInvalid('maxFamilyAnnualIncome')) { <em>Income cannot be negative.</em> }</label>
+          <label class="field"><span>Minimum marks percentage (%) <b>*</b></span><input type="number" min="0" max="100" step="0.01" formControlName="minPercentageCriteria">@if (isInvalid('minPercentageCriteria')) { <em>Enter a percentage from 0 to 100.</em> }</label>
+          <label class="field full"><span>Eligible professions <b>*</b></span><select multiple size="5" formControlName="eligibleProfessionIds" aria-describedby="profession-help">@for (profession of professions; track profession.id) { <option [value]="profession.id">{{ profession.name }}</option> }</select><small id="profession-help">Select one or more. Use Ctrl (Windows) or Command (Mac) to choose multiple items.</small>@if (isInvalid('eligibleProfessionIds')) { <em>Select at least one profession.</em> }</label>
+          <label class="field full"><span>Required documents <b>*</b></span><select multiple size="6" formControlName="requiredDocumentIds" aria-describedby="document-help">@for (document of documents; track document.documentTypeId) { <option [value]="document.documentTypeId">{{ document.name }}{{ document.description ? ' — ' + document.description : '' }}</option> }</select><small id="document-help">Select one or more documents. Use Ctrl (Windows) or Command (Mac) to choose multiple items.</small>@if (isInvalid('requiredDocumentIds')) { <em>Select at least one required document.</em> }</label>
+          @if (form.controls.scholarshipType.value === 'CATEGORY_BASED') {
+            <label class="field full"><span>Eligible social categories <b>*</b></span><select multiple size="4" formControlName="eligibleCategoriesIds" aria-describedby="category-help">@for (category of categories; track category.id) { <option [value]="category.id">{{ category.code }}</option> }</select><small id="category-help">Select at least one category for category based scholarships. Use Ctrl (Windows) or Command (Mac) to choose multiple items.</small>@if (isInvalid('eligibleCategoriesIds')) { <em>Select at least one eligible category.</em> }</label>
+          }
+          @if (!loadingOptions && documents.length === 0) { <p class="inline-alert">No document types are configured yet.</p> }
+          @if (!loadingOptions && professions.length === 0) { <p class="inline-alert">No professions are configured yet.</p> }
+          @if (!loadingOptions && form.controls.scholarshipType.value === 'CATEGORY_BASED' && categories.length === 0) { <p class="inline-alert">No categories are configured yet.</p> }
+        </div>
+      </section>
+    }
+
+    @if (step === 2) {
+      <section class="form-card" aria-labelledby="step-title">
+        <div class="section-heading"><span class="section-icon">03</span><div><h2 id="step-title">Award and budget</h2><p>Set the award amount, payment schedule and overall scheme budget.</p></div></div>
+        <div class="field-grid">
+          <label class="field"><span>Scholarship amount <b>*</b></span><input type="number" min="0.01" [max]="form.controls.amountType.value === 'PERCENTAGE_OF_FEES' ? 100 : null" step="0.01" formControlName="scholarshipAmount" placeholder="0.00">@if (isInvalid('scholarshipAmount')) { <em>{{ form.controls.scholarshipAmount.hasError('percentage') ? 'Percentage of fees must not exceed 100%.' : 'Enter an amount greater than zero.' }}</em> }</label>
+          <label class="field"><span>Amount type <b>*</b></span><select formControlName="amountType"><option value="">Choose amount type</option>@for (type of amountTypes; track type) { <option [value]="type">{{ type === 'FIXED_AMOUNT' ? 'Fixed amount' : 'Percentage of fees' }}</option> }</select>@if (isInvalid('amountType')) { <em>Select an amount type.</em> }</label>
+          <label class="field"><span>Payment frequency <b>*</b></span><select formControlName="paymentFrequency"><option value="">Choose frequency</option>@for (frequency of paymentFrequencies; track frequency) { <option [value]="frequency">{{ frequency.replace('_', ' ') | titlecase }}</option> }</select>@if (isInvalid('paymentFrequency')) { <em>Select a payment frequency.</em> }</label>
+          <label class="field"><span>Total scheme budget (₹) <b>*</b></span><input type="number" min="0.01" step="0.01" formControlName="totalSchemeBudget" placeholder="0.00">@if (isInvalid('totalSchemeBudget')) { <em>Enter a budget greater than zero.</em> }</label>
+        </div>
+        <aside class="review-note"><strong>Ready to submit?</strong><span>Creating this scheme will make it available to eligible applicants for the dates entered above.</span></aside>
+      </section>
+    }
+
+    <footer class="form-actions">
+      <button type="button" class="button secondary" (click)="back()" [disabled]="step === 0">Back</button>
+      <span class="step-count">Step {{ step + 1 }} of {{ steps.length }}</span>
+      @if (step < steps.length - 1) { <button type="button" class="button primary" (click)="next()" [disabled]="loadingOptions || !!loadError">Continue <span aria-hidden="true">→</span></button> }
+      @else { <button type="submit" class="button primary" [disabled]="submitting || loadingOptions || !!loadError">{{ submitting ? 'Creating…' : 'Create scholarship scheme' }}</button> }
+    </footer>
+  </form>
+</main>

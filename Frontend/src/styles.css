@@ -162,6 +162,24 @@ a {
   padding: 0 var(--container-padding);
 }
 
+.spinner {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  display: inline-block;
+  border: 2px solid #ffffff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* ------------------------------
    4. SIDEBAR NAVIGATION
 ------------------------------ */

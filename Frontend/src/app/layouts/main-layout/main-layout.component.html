@@ -7,13 +7,13 @@
   ></app-sidebar>
 
   <main class="main-shell portal-main">
-  <app-navbar
-    [userName]="userName"
-    [userRole]="userRole"
-    [showSidebarToggle]="true"
-    pageTitle="Scholarship Management"
-    (toggleSidebar)="toggleSidebar()"
-  ></app-navbar>
+    <app-navbar
+      *ngIf="isLoggedIn"
+      [userName]="userName"
+      [userRole]="userRole"
+      [showSidebarToggle]="true"
+      (toggleSidebar)="toggleSidebar()"
+    ></app-navbar>
 
     <section class="page-content portal-content">
         <router-outlet></router-outlet>

@@ -38,7 +38,11 @@
         </thead>
 
         <tbody *ngIf="!loading && pagedRows.length; else tableState">
-          <tr *ngFor="let row of pagedRows; let i = index; trackBy: trackByIndex">
+          <tr
+            *ngFor="let row of pagedRows; let i = index; trackBy: trackByIndex"
+            (click)="onRowClick(row)"
+            style="cursor: pointer;"
+          >
             <td *ngIf="showIndex" class="vs-table-cell-center">
               {{ startItem + i }}
             </td>
@@ -78,8 +82,9 @@
           <tbody *ngIf="loading">
             <tr>
               <td [attr.colspan]="colspan" class="vs-table-empty">
-                <strong>Loading...</strong>
-                <span>Fetching table records.</span>
+                <span class="vs-table-spinner" role="status" aria-label="Loading records"></span>
+                <strong>Loading records</strong>
+                <span>Fetching the latest data.</span>
               </td>
             </tr>
           </tbody>
@@ -98,26 +103,27 @@
 
     <footer class="vs-table-footer" *ngIf="showPagination">
       <div class="vs-table-page-info">
-        Showing {{ startItem }} to {{ endItem }} of {{ filteredRows.length }} records
+        Showing {{ startItem }} to {{ endItem }} of {{ filteredRows.length }} entries
       </div>
 
       <div class="vs-table-pagination">
-        <button class="vs-btn vs-btn-secondary vs-btn-sm" type="button" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
-          Previous
+        <button class="vs-btn vs-btn-secondary vs-btn-sm" type="button" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1" aria-label="Previous page">
+          ‹
         </button>
 
         <button
-          *ngFor="let page of getPages(); let pageIndex = index"
+          *ngFor="let page of getPages()"
           class="vs-btn vs-btn-sm"
-          [ngClass]="pageIndex + 1 === currentPage ? 'vs-btn-primary' : 'vs-btn-secondary'"
+          [ngClass]="page === currentPage ? 'vs-btn-primary' : 'vs-btn-secondary'"
+          [attr.aria-current]="page === currentPage ? 'page' : null"
           type="button"
-          (click)="goToPage(pageIndex + 1)"
+          (click)="goToPage(page)"
         >
-          {{ pageIndex + 1 }}
+          {{ page }}
         </button>
 
-        <button class="vs-btn vs-btn-secondary vs-btn-sm" type="button" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
-          Next
+        <button class="vs-btn vs-btn-secondary vs-btn-sm" type="button" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages" aria-label="Next page">
+          ›
         </button>
       </div>
     </footer>

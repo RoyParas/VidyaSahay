@@ -1,0 +1,11 @@
+<app-common-table
+  [title]="title"
+  [subtitle]="subtitle"
+  [columns]="columns"
+  [rows]="rows"
+  [loading]="loading"
+  [emptyTitle]="errorMessage ? 'Unable to load students' : 'No students found'"
+  [emptyMessage]="errorMessage || (title === 'My Students' ? 'No students are enrolled at your institute yet.' : 'There are no student profiles to display.')"
+  [showIndex]="true"
+  (rowClick)="onRowClick($event)"
+></app-common-table>

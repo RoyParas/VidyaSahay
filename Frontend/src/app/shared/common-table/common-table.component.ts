@@ -33,7 +33,7 @@ export class CommonTableComponent implements OnChanges {
   @Input() loading = false;
   @Input() searchable = true;
   @Input() searchPlaceholder = 'Search records';
-  @Input() pageSize = 10;
+  @Input() pageSize = 5;
   @Input() showIndex = false;
   @Input() emptyTitle = 'No records found';
   @Input() emptyMessage = 'There is nothing to display right now.';
@@ -41,6 +41,7 @@ export class CommonTableComponent implements OnChanges {
   @Input() showActions = false;
 
   @Output() actionClick = new EventEmitter<{ actionId: string; row: Record<string, unknown> }>();
+  @Output() rowClick = new EventEmitter<Record<string, unknown>>();
 
   searchText = '';
   currentPage = 1;
@@ -108,6 +109,10 @@ export class CommonTableComponent implements OnChanges {
     this.actionClick.emit({ actionId, row });
   }
 
+  onRowClick(row: Record<string, unknown>): void {
+    this.rowClick.emit(row);
+  }
+
   getValue(row: Record<string, unknown>, key: string): unknown {
     return key.split('.').reduce<unknown>((value, part) => {
       if (value && typeof value === 'object' && part in (value as Record<string, unknown>)) {
@@ -161,7 +166,12 @@ export class CommonTableComponent implements OnChanges {
   }
 
   getPages(): number[] {
-    return Array.from({ length: this.totalPages }, (_, index) => index + 1);
+    const pageCount = Math.min(this.totalPages, 5);
+    const firstPage = Math.min(
+      Math.max(this.currentPage - Math.floor(pageCount / 2), 1),
+      this.totalPages - pageCount + 1
+    );
+    return Array.from({ length: pageCount }, (_, index) => firstPage + index);
   }
 
   trackByIndex(index: number, _row?: Record<string, unknown>): number {

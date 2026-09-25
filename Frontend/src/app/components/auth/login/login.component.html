@@ -39,7 +39,10 @@
           </div>
         </div>
 
-        <button class="btn btn-primary" type="submit">Login</button>
+        <button class="btn btn-primary" type="submit" [disabled]="loading || loginForm.invalid">
+          <span *ngIf="loading" class="spinner"></span>
+          {{ loading ? 'Signing In...' : 'Login' }}
+        </button>
       </form>
       <a class="btn btn-secondary" routerLink="/">Back to Home</a>
       <p class="auth-switch">

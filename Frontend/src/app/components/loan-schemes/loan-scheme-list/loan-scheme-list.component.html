@@ -1,0 +1,11 @@
+<app-common-table
+  title="Loan schemes"
+  subtitle="Loan Schemes available through registered banks."
+  [columns]="columns"
+  [rows]="rows"
+  [loading]="loading"
+  [emptyTitle]="errorMessage ? 'Unable to load loan schemes' : 'No loan schemes found'"
+  [emptyMessage]="errorMessage || 'There are no loan schemes to display.'"
+  [showIndex]="true"
+  (rowClick)="onRowClick($event)"
+></app-common-table>

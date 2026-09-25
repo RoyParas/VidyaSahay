@@ -1,0 +1,74 @@
+<main class="scheme-page">
+  <header class="page-heading">
+    <div><p class="eyebrow">BANK PORTAL · SCHEME SETUP</p><h1>Create a loan scheme</h1><p>Enter the scheme details, eligibility rules and repayment terms.</p></div>
+    <span class="secure-note">Draft is submitted when you finish</span>
+  </header>
+
+  <nav class="wizard-steps" aria-label="Form progress">
+    @for (label of steps; track label; let i = $index) {
+      <div class="step" [class.active]="step === i" [class.complete]="step > i">
+        <span class="step-number">{{ step > i ? '✓' : i + 1 }}</span><span>{{ label }}</span>
+      </div>
+    }
+  </nav>
+
+  @if (loadError) { <p class="alert error" role="alert">{{ loadError }}</p> }
+  @if (submitError) { <p class="alert error" role="alert">{{ submitError }}</p> }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    @if (step === 0) {
+      <section class="form-card" aria-labelledby="step-title">
+        <div class="section-heading"><span class="section-icon">01</span><div><h2 id="step-title">Scheme and loan details</h2><p>Set the public name, availability and funding range.</p></div></div>
+        <div class="field-grid">
+          <label class="field full"><span>Scheme name <b>*</b></span><input formControlName="schemeName" maxlength="200" placeholder="e.g. Higher Education Support Loan"><small>Up to 200 characters.</small>@if (isInvalid('schemeName')) { <em>Enter a scheme name (up to 200 characters).</em> }</label>
+          <label class="field"><span>Effective from <b>*</b></span><input type="date" formControlName="effectiveFrom" [min]="minDate">@if (isInvalid('effectiveFrom')) { <em>Choose today or a future date.</em> }</label>
+          <label class="field"><span>Effective to <b>*</b></span><input type="date" formControlName="effectiveTo" [min]="minDate">@if (isInvalid('effectiveTo')) { <em>{{ form.get('effectiveTo')?.hasError('dateOrder') ? 'End date must be on or after the start date.' : 'Choose today or a future date.' }}</em> }</label>
+          <label class="field"><span>Minimum loan amount (₹) <b>*</b></span><input type="number" min="0.01" step="0.01" formControlName="minLoanAmount" placeholder="0.00">@if (isInvalid('minLoanAmount')) { <em>Enter an amount greater than zero.</em> }</label>
+          <label class="field"><span>Maximum loan amount (₹) <b>*</b></span><input type="number" min="0.01" step="0.01" formControlName="maxLoanAmount" placeholder="0.00">@if (isInvalid('maxLoanAmount')) { <em>{{ form.get('maxLoanAmount')?.hasError('range') ? 'Must be at least the minimum loan amount.' : 'Enter an amount greater than zero.' }}</em> }</label>
+          <label class="field"><span>Interest type <b>*</b></span><select formControlName="interestType"><option value="">Choose interest type</option>@for (type of interestTypes; track type) { <option [value]="type">{{ type === 'FIXED' ? 'Fixed' : 'Floating' }}</option> }</select>@if (isInvalid('interestType')) { <em>Select an interest type.</em> }</label>
+          <label class="field"><span>Disbursement frequency <b>*</b></span><select formControlName="disbursementType"><option value="">Choose frequency</option>@for (type of disbursementTypes; track type) { <option [value]="type">{{ type === 'ONE_TIME' ? 'One time' : 'Yearly' }}</option> }</select>@if (isInvalid('disbursementType')) { <em>Select a disbursement frequency.</em> }</label>
+          <label class="field"><span>Minimum interest rate (%)</span><input type="number" min="0" max="999.9999" step="0.0001" formControlName="minInterestRate" placeholder="Optional">@if (isInvalid('minInterestRate')) { <em>Rate cannot be negative.</em> }</label>
+          <label class="field"><span>Maximum interest rate (%) <b>*</b></span><input type="number" min="0" max="999.9999" step="0.0001" formControlName="maxInterestRate" placeholder="0.0000">@if (isInvalid('maxInterestRate')) { <em>{{ form.get('maxInterestRate')?.hasError('range') ? 'Must be at least the minimum rate.' : 'Enter a non-negative rate.' }}</em> }</label>
+        </div>
+      </section>
+    }
+
+    @if (step === 1) {
+      <section class="form-card" aria-labelledby="step-title">
+        <div class="section-heading"><span class="section-icon">02</span><div><h2 id="step-title">Eligibility and documents</h2><p>Choose who can apply and the documents they must provide.</p></div></div>
+        <div class="field-grid">
+          <label class="field"><span>Minimum applicant age <b>*</b></span><input type="number" min="18" max="100" formControlName="applierMinAge">@if (isInvalid('applierMinAge')) { <em>Age must be from 18 to 100.</em> }</label>
+          <label class="field"><span>Maximum applicant age <b>*</b></span><input type="number" min="18" max="100" formControlName="applierMaxAge">@if (isInvalid('applierMaxAge')) { <em>{{ form.get('applierMaxAge')?.hasError('range') ? 'Must be at least the minimum age.' : 'Age must be from 18 to 100.' }}</em> }</label>
+          <label class="field"><span>Minimum credit score</span><input type="number" min="300" max="900" formControlName="minCreditScore" placeholder="Optional">@if (isInvalid('minCreditScore')) { <em>Credit score must be between 300 and 900.</em> }</label>
+          <div class="field choice-field"><span>Co-borrower required? <b>*</b></span><div class="radio-row"><label><input type="radio" [value]="true" formControlName="coBorrowerRequired"> Yes</label><label><input type="radio" [value]="false" formControlName="coBorrowerRequired"> No</label></div></div>
+          <label class="field full"><span>Eligible professions <b>*</b></span><select multiple size="5" formControlName="eligibleProfessionIds" aria-describedby="profession-help">@for (profession of professions; track profession.id) { <option [value]="profession.id">{{ profession.name }}</option> }</select><small id="profession-help">Select one or more. Use Ctrl (Windows) or Command (Mac) to choose multiple items.</small>@if (isInvalid('eligibleProfessionIds')) { <em>Select at least one profession.</em> }</label>
+          <label class="field full"><span>Required documents <b>*</b></span><select multiple size="6" formControlName="requiredDocumentIds" aria-describedby="document-help">@for (document of documents; track document.documentTypeId) { <option [value]="document.documentTypeId">{{ document.name }}{{ document.description ? ' — ' + document.description : '' }}</option> }</select><small id="document-help">Select one or more documents. Use Ctrl (Windows) or Command (Mac) to choose multiple items.</small>@if (isInvalid('requiredDocumentIds')) { <em>Select at least one required document.</em> }</label>
+          @if (!loadingOptions && documents.length === 0) { <p class="inline-alert">No document types are configured yet.</p> }
+          @if (!loadingOptions && professions.length === 0) { <p class="inline-alert">No professions are configured yet.</p> }
+        </div>
+      </section>
+    }
+
+    @if (step === 2) {
+      <section class="form-card" aria-labelledby="step-title">
+        <div class="section-heading"><span class="section-icon">03</span><div><h2 id="step-title">Repayment terms</h2><p>Define the repayment period, prepayment policy and moratorium.</p></div></div>
+        <div class="field-grid">
+          <label class="field"><span>Minimum repayment tenure (years) <b>*</b></span><input type="number" min="1" formControlName="minTenureForRepayment">@if (isInvalid('minTenureForRepayment')) { <em>Tenure must be at least 1 year.</em> }</label>
+          <label class="field"><span>Maximum repayment tenure (years) <b>*</b></span><input type="number" min="1" formControlName="maxTenureForRepayment">@if (isInvalid('maxTenureForRepayment')) { <em>{{ form.get('maxTenureForRepayment')?.hasError('range') ? 'Must be at least the minimum tenure.' : 'Tenure must be at least 1 year.' }}</em> }</label>
+          <label class="field"><span>Foreclosure charges (₹)</span><input type="number" min="0" step="0.01" formControlName="foreclosureCharges" placeholder="0.00">@if (isInvalid('foreclosureCharges')) { <em>Charges cannot be negative.</em> }</label>
+          <label class="field"><span>Additional moratorium (months) <b>*</b></span><input type="number" min="0" max="120" formControlName="additionalMonths">@if (isInvalid('additionalMonths')) { <em>Enter a value from 0 to 120 months.</em> }</label>
+          <div class="field choice-field"><span>Allow prepayment? <b>*</b></span><div class="radio-row"><label><input type="radio" [value]="true" formControlName="prepaymentAllowed"> Yes</label><label><input type="radio" [value]="false" formControlName="prepaymentAllowed"> No</label></div></div>
+          <div class="field choice-field"><span>Include course period in moratorium? <b>*</b></span><div class="radio-row"><label><input type="radio" [value]="true" formControlName="coursePeriodIncluded"> Yes</label><label><input type="radio" [value]="false" formControlName="coursePeriodIncluded"> No</label></div></div>
+        </div>
+        <aside class="review-note"><strong>Ready to submit?</strong><span>Creating this scheme will make it available according to the effective dates and eligibility rules entered above.</span></aside>
+      </section>
+    }
+
+    <footer class="form-actions">
+      <button type="button" class="button secondary" (click)="back()" [disabled]="step === 0">Back</button>
+      <span class="step-count">Step {{ step + 1 }} of {{ steps.length }}</span>
+      @if (step < steps.length - 1) { <button type="button" class="button primary" (click)="next()" [disabled]="loadingOptions || !!loadError">Continue <span aria-hidden="true">→</span></button> }
+      @else { <button type="submit" class="button primary" [disabled]="submitting || loadingOptions || !!loadError">{{ submitting ? 'Creating…' : 'Create loan scheme' }}</button> }
+    </footer>
+  </form>
+</main>

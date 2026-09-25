@@ -1,0 +1,128 @@
+.eligibility-page {
+  display: grid;
+  gap: 22px;
+  min-width: 0;
+}
+.page-heading h1 {
+  margin: 0;
+  color: var(--text-primary);
+}
+.page-heading p:not(.eyebrow) {
+  margin: 5px 0 0;
+  color: var(--text-secondary);
+}
+.eyebrow {
+  margin: 0 0 5px;
+  color: var(--primary-dark);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.eligibility-card {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.8fr) minmax(220px, 1fr) auto;
+  align-items: end;
+  gap: 20px;
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--white);
+  box-shadow: var(--shadow-sm);
+}
+.eligibility-copy h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+}
+.eligibility-copy p {
+  margin: 5px 0 0;
+  color: var(--text-secondary);
+  font-size: 0.86rem;
+}
+.amount-field {
+  display: grid;
+  gap: 7px;
+  color: var(--text-primary);
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+.amount-field b {
+  color: var(--danger);
+}
+.input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  background: var(--white);
+  color: var(--text-secondary);
+}
+.input-wrap:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 14%, transparent);
+}
+.input-wrap:has(input.invalid) {
+  border-color: var(--danger);
+}
+.input-wrap input {
+  width: 100%;
+  min-width: 0;
+  height: 42px;
+  border: 0;
+  outline: 0;
+  color: var(--text-primary);
+  background: transparent;
+}
+.amount-field small {
+  color: var(--danger);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 9px;
+  grid-column: 3;
+}
+.form-actions button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+.form-fields {
+  display: contents;
+}
+@media (max-width: 920px) {
+  .eligibility-card {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .eligibility-copy {
+    grid-column: 1 / -1;
+  }
+  .form-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+}
+@media (max-width: 600px) {
+  .eligibility-card {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 15px;
+    padding: 17px;
+  }
+  .eligibility-copy,
+  .form-actions {
+    grid-column: 1;
+  }
+  .form-fields {
+    display: grid;
+    gap: 15px;
+  }
+  .form-actions button {
+    flex: 1;
+  }
+}

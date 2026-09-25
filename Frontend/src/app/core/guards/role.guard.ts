@@ -3,9 +3,7 @@ import { ActivatedRouteSnapshot, Router } from '@angular/router';
 import { inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 
-export const roleGuard: CanActivateFn = (
-  route: ActivatedRouteSnapshot
-) => {
+export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
   const router = inject(Router);
   const authService = inject(AuthService);
 

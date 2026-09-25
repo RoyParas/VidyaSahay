@@ -1,0 +1,11 @@
+<app-common-table
+  title="My applications"
+  subtitle="Applications associated with you."
+  [columns]="columns"
+  [rows]="rows"
+  [loading]="loading"
+  [emptyTitle]="errorMessage ? 'Unable to load applications' : 'No applications found'"
+  [emptyMessage]="errorMessage || 'There are no applications to display.'"
+  [showIndex]="true"
+  (rowClick)="onRowClick($event)"
+></app-common-table>

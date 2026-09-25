@@ -1,0 +1,29 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.eligibility-group + .eligibility-group {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.eligibility-group h3 {
+  margin: 0 0 12px;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.scholarship-category-chip {
+  background: var(--accent-orange-light);
+  border-color: var(--accent-orange-border);
+  color: var(--accent-orange);
+}
+
+@media (max-width: 640px) {
+  .eligibility-group + .eligibility-group {
+    margin-top: 18px;
+    padding-top: 18px;
+  }
+}

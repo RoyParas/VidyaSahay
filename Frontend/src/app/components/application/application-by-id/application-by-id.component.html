@@ -1,0 +1,1088 @@
+<div class="application-page">
+
+  <!-- Loading state -->
+  <div class="state-container" *ngIf="isLoading">
+    <div
+      class="loader"
+      aria-label="Loading application"
+    ></div>
+
+    <h2>Loading application</h2>
+
+    <p>
+      Please wait while the application details are being fetched.
+    </p>
+  </div>
+
+  <!-- Error state -->
+  <div
+    class="state-container error-state"
+    *ngIf="!isLoading && errorMessage"
+  >
+    <div class="state-icon">!</div>
+
+    <h2>Unable to load application</h2>
+
+    <p>{{ errorMessage }}</p>
+
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="loadApplication()"
+    >
+      Try Again
+    </button>
+  </div>
+
+  <!-- Application -->
+  <ng-container
+    *ngIf="!isLoading && !errorMessage && application"
+  >
+    <header class="page-header">
+      <div class="header-left">
+        <button
+          type="button"
+          class="back-button"
+          (click)="goBack()"
+          aria-label="Go back to applications"
+        >
+          <span
+            class="back-arrow"
+            aria-hidden="true"
+          >
+            ←
+          </span>
+
+          <span>Back to Applications</span>
+        </button>
+
+        <div class="page-title-section">
+          <div
+            class="application-type-icon"
+            [class.loan-icon]="isLoanApplication"
+            [class.scholarship-icon]="isScholarshipApplication"
+          >
+            {{ isLoanApplication ? '₹' : 'S' }}
+          </div>
+
+          <div class="title-content">
+            <div class="heading-row">
+              <h1>
+                {{ application.applicationSummary.schemeName }}
+              </h1>
+
+              <span
+                class="type-badge"
+                [class.type-loan]="isLoanApplication"
+                [class.type-scholarship]="isScholarshipApplication"
+              >
+                {{
+                  application.applicationSummary.applicationType
+                }}
+              </span>
+            </div>
+
+            <p>
+              Review student information, application details and
+              uploaded documents.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-summary">
+        <span class="header-label">
+          Application ID
+        </span>
+
+        <strong
+          [title]="application.applicationSummary.id"
+        >
+          {{ shortApplicationId }}
+        </strong>
+
+        <span
+          class="badge"
+          [ngClass]="
+            getStatusClass(
+              application.applicationSummary.status
+            )
+          "
+        >
+          {{
+            formatStatus(
+              application.applicationSummary.status
+            )
+          }}
+        </span>
+      </div>
+    </header>
+
+    <!-- Overview cards -->
+    <section
+      class="summary-grid"
+      aria-label="Application overview"
+    >
+      <article class="summary-card">
+        <span class="summary-card-label">
+          Application Type
+        </span>
+
+        <div class="summary-card-value">
+          <span class="summary-card-icon blue-icon">
+            {{ isLoanApplication ? '₹' : 'S' }}
+          </span>
+
+          <div>
+            <strong>
+              {{
+                isLoanApplication
+                  ? 'Education Loan'
+                  : 'Government Scholarship'
+              }}
+            </strong>
+
+            <small>
+              {{ application.applicationSummary.schemeName }}
+            </small>
+          </div>
+        </div>
+      </article>
+
+      <article class="summary-card">
+        <span class="summary-card-label">
+          Student
+        </span>
+
+        <div class="summary-card-value">
+          <span class="summary-card-icon orange-icon">
+            {{ studentInitials }}
+          </span>
+
+          <div>
+            <strong>{{ studentFullName }}</strong>
+
+            <small>
+              {{ application.student.email }}
+            </small>
+          </div>
+        </div>
+      </article>
+
+      <article class="summary-card">
+        <span class="summary-card-label">
+          Approved Amount
+        </span>
+
+        <div class="summary-card-value">
+          <span class="summary-card-icon green-icon">
+            ₹
+          </span>
+
+          <div>
+            <strong>
+              {{
+                application.applicationSummary.approvedAmount !==
+                  null &&
+                application.applicationSummary.approvedAmount !==
+                  undefined
+                  ? (
+                      application.applicationSummary
+                        .approvedAmount
+                      | currency:
+                          'INR':
+                          'symbol':
+                          '1.0-2'
+                    )
+                  : 'Not approved'
+              }}
+            </strong>
+
+            <small>
+              {{
+                application.applicationSummary.status ===
+                'APPROVED'
+                  ? 'Approved amount'
+                  : 'Awaiting final decision'
+              }}
+            </small>
+          </div>
+        </div>
+      </article>
+
+      <article class="summary-card">
+        <span class="summary-card-label">
+          Document Verification
+        </span>
+
+        <div class="summary-card-value">
+          <span class="summary-card-icon purple-icon">
+            {{ verifiedDocumentCount }}/{{
+              application.documents.length
+            }}
+          </span>
+
+          <div>
+            <strong>
+              {{ documentVerificationLabel }}
+            </strong>
+
+            <small>
+              {{ application.documents.length }}
+              document(s) uploaded
+            </small>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <main class="content-layout">
+
+      <!-- Main column -->
+      <div class="content-column">
+
+        <!-- Personal information -->
+        <section class="content-card">
+          <div class="card-header">
+            <div>
+              <span class="section-eyebrow">
+                Student profile
+              </span>
+
+              <h2>Personal Information</h2>
+            </div>
+
+            <span
+              class="badge"
+              [ngClass]="
+                getStatusClass(
+                  application.student.verificationStatus
+                )
+              "
+            >
+              {{
+                formatStatus(
+                  application.student.verificationStatus
+                )
+              }}
+            </span>
+          </div>
+
+          <div class="student-profile">
+            <div class="student-avatar">
+              {{ studentInitials }}
+            </div>
+
+            <div class="student-profile-details">
+              <h3>{{ studentFullName }}</h3>
+
+              <p>{{ application.student.course }}</p>
+
+              <div class="profile-tags">
+                <span>
+                  {{ application.student.category }}
+                </span>
+
+                <span>
+                  {{
+                    formatStatus(
+                      application.student.gender
+                    )
+                  }}
+                </span>
+
+                <span>
+                  {{
+                    application.student.profileCompleted
+                      ? 'Profile Complete'
+                      : 'Profile Incomplete'
+                  }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="details-grid">
+            <div class="detail-item">
+              <span class="detail-label">
+                Email Address
+              </span>
+
+              <strong>
+                {{ application.student.email }}
+              </strong>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">
+                Mobile Number
+              </span>
+
+              <strong>
+                {{ application.student.mobile }}
+              </strong>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">
+                Date of Birth
+              </span>
+
+              <strong>
+                {{
+                  application.student.dateOfBirth
+                    | date: 'dd MMM yyyy'
+                }}
+              </strong>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">
+                Masked Aadhaar
+              </span>
+
+              <strong>
+                {{
+                  application.student.maskedAadharNumber
+                }}
+              </strong>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">
+                Father's Name
+              </span>
+
+              <strong>
+                {{
+                  application.student.fatherName ||
+                  'Not available'
+                }}
+              </strong>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">
+                Mother's Name
+              </span>
+
+              <strong>
+                {{
+                  application.student.motherName ||
+                  'Not available'
+                }}
+              </strong>
+            </div>
+          </div>
+        </section>
+
+        <!-- Academic information -->
+        <section class="content-card">
+          <div class="card-header">
+            <div>
+              <span class="section-eyebrow">
+                Education and finances
+              </span>
+
+              <h2>Academic &amp; Financial Details</h2>
+            </div>
+          </div>
+
+          <div class="details-grid">
+            <div class="detail-item detail-item-wide">
+              <span class="detail-label">
+                Institute
+              </span>
+
+              <strong>
+                {{
+                  application.instituteName ||
+                  application.student.institute ||
+                  'Not available'
+                }}
+              </strong>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">
+                Course
+              </span>
+
+              <strong>
+                {{ application.student.course }}
+              </strong>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">
+                Category
+              </span>
+
+              <strong>
+                {{ application.student.category }}
+              </strong>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">
+                Fees Paid
+              </span>
+
+              <strong>
+                {{
+                  application.student.feesPaid
+                    | currency:
+                        'INR':
+                        'symbol':
+                        '1.0-2'
+                }}
+              </strong>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">
+                Fees Pending
+              </span>
+
+              <strong class="amount-pending">
+                {{
+                  application.student.feesPending
+                    | currency:
+                        'INR':
+                        'symbol':
+                        '1.0-2'
+                }}
+              </strong>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">
+                Annual Family Income
+              </span>
+
+              <strong>
+                {{
+                  application.student.annualFamilyIncome
+                    | currency:
+                        'INR':
+                        'symbol':
+                        '1.0-2'
+                }}
+              </strong>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">
+                Student Verification
+              </span>
+
+              <span
+                class="badge detail-badge"
+                [ngClass]="
+                  getStatusClass(
+                    application.student.verificationStatus
+                  )
+                "
+              >
+                {{
+                  formatStatus(
+                    application.student.verificationStatus
+                  )
+                }}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Address -->
+        <section class="content-card">
+          <div class="card-header">
+            <div>
+              <span class="section-eyebrow">
+                Location
+              </span>
+
+              <h2>Address Information</h2>
+            </div>
+          </div>
+
+          <div class="details-grid">
+            <div class="detail-item">
+              <span class="detail-label">
+                Country
+              </span>
+
+              <strong>
+                {{
+                  application.student.address.country
+                }}
+              </strong>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">
+                State
+              </span>
+
+              <strong>
+                {{ application.student.address.state }}
+              </strong>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">
+                District
+              </span>
+
+              <strong>
+                {{
+                  application.student.address.district
+                }}
+              </strong>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">
+                City
+              </span>
+
+              <strong>
+                {{ application.student.address.city }}
+              </strong>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">
+                Location
+              </span>
+
+              <strong>
+                {{ application.student.location }}
+              </strong>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">
+                Pincode
+              </span>
+
+              <strong>
+                {{ application.student.pincode }}
+              </strong>
+            </div>
+          </div>
+        </section>
+
+        <!-- Documents -->
+        <section class="content-card documents-card">
+          <div class="card-header documents-header">
+            <div>
+              <span class="section-eyebrow">
+                Verification
+              </span>
+
+              <h2>Uploaded Documents</h2>
+
+              <p>
+                Review each document and update its
+                verification status.
+              </p>
+            </div>
+
+            <span class="document-count">
+              {{ application.documents.length }}
+              Document(s)
+            </span>
+          </div>
+
+          <div
+            class="empty-documents"
+            *ngIf="application.documents.length === 0"
+          >
+            <div class="empty-document-icon">
+              □
+            </div>
+
+            <h3>No documents uploaded</h3>
+
+            <p>
+              The student has not uploaded any documents.
+            </p>
+          </div>
+
+          <div
+            class="document-list"
+            *ngIf="application.documents.length > 0"
+          >
+            <article
+              class="document-item"
+              *ngFor="
+                let document of application.documents;
+                trackBy: trackDocument
+              "
+            >
+              <div class="document-main">
+                <div class="document-file-icon">
+                  PDF
+                </div>
+
+                <div class="document-info">
+                  <div class="document-title-row">
+                    <h3>
+                      {{ document.documentTypeName }}
+                    </h3>
+
+                    <span
+                      class="badge"
+                      [ngClass]="
+                        getStatusClass(
+                          document.verificationStatus
+                        )
+                      "
+                    >
+                      {{
+                        formatStatus(
+                          document.verificationStatus
+                        )
+                      }}
+                    </span>
+                  </div>
+
+                  <p>
+                    {{
+                      document.documentTypeDescription
+                    }}
+                  </p>
+
+                  <small [title]="document.fileName">
+                    {{ document.fileName }}
+                  </small>
+                </div>
+              </div>
+
+              <div class="document-actions">
+                <button
+                  type="button"
+                  class="btn btn-secondary btn-small"
+                  [disabled]="
+                    viewingDocumentId === document.id
+                  "
+                  (click)="viewDocument(document)"
+                >
+                  <span
+                    class="button-spinner dark-spinner"
+                    *ngIf="
+                      viewingDocumentId === document.id
+                    "
+                  ></span>
+
+                  {{
+                    viewingDocumentId === document.id
+                      ? 'Opening...'
+                      : 'View Document'
+                  }}
+                </button>
+
+                <label class="status-select-label">
+                  <span class="sr-only">
+                    Change verification status for
+                    {{ document.documentTypeName }}
+                  </span>
+
+                  <select
+                    class="document-status-select"
+                    [value]="
+                      document.verificationStatus
+                    "
+                    [disabled]="
+                      updatingDocumentId === document.id
+                    "
+                    (change)="
+                      onDocumentStatusChange(
+                        document,
+                        $event
+                      )
+                    "
+                    [attr.aria-label]="
+                      'Verification status for ' +
+                      document.documentTypeName
+                    "
+                  >
+                    <option value="PENDING">
+                      Pending
+                    </option>
+
+                    <option value="VERIFIED">
+                      Verified
+                    </option>
+
+                    <option value="REJECTED">
+                      Rejected
+                    </option>
+                  </select>
+                </label>
+
+                <span
+                  class="small-inline-loader"
+                  *ngIf="
+                    updatingDocumentId === document.id
+                  "
+                  aria-label="Updating document"
+                ></span>
+              </div>
+            </article>
+          </div>
+        </section>
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="sidebar-column">
+        <section class="content-card sticky-card">
+          <div class="card-header">
+            <div>
+              <span class="section-eyebrow">
+                Application
+              </span>
+
+              <h2>Application Summary</h2>
+            </div>
+          </div>
+
+          <div class="summary-list">
+            <div class="summary-row">
+              <span>Application Type</span>
+
+              <strong>
+                {{
+                  formatStatus(
+                    application.applicationSummary
+                      .applicationType
+                  )
+                }}
+              </strong>
+            </div>
+
+            <div class="summary-row">
+              <span>Scheme</span>
+
+              <strong>
+                {{
+                  application.applicationSummary
+                    .schemeName
+                }}
+              </strong>
+            </div>
+
+            <div class="summary-row">
+              <span>Status</span>
+
+              <span
+                class="badge"
+                [ngClass]="
+                  getStatusClass(
+                    application.applicationSummary
+                      .status
+                  )
+                "
+              >
+                {{
+                  formatStatus(
+                    application.applicationSummary
+                      .status
+                  )
+                }}
+              </span>
+            </div>
+
+            <div class="summary-row">
+              <span>Approved Amount</span>
+
+              <strong>
+                {{
+                  application.applicationSummary
+                    .approvedAmount !== null &&
+                  application.applicationSummary
+                    .approvedAmount !== undefined
+                    ? (
+                        application.applicationSummary
+                          .approvedAmount
+                        | currency:
+                            'INR':
+                            'symbol':
+                            '1.0-2'
+                      )
+                    : 'Not available'
+                }}
+              </strong>
+            </div>
+
+            <div class="summary-row">
+              <span>Created On</span>
+
+              <strong>
+                {{
+                  application.student.createdAt
+                    | date: 'dd MMM yyyy'
+                }}
+              </strong>
+            </div>
+
+            <div class="summary-row">
+              <span>Last Updated</span>
+
+              <strong>
+                {{
+                  application.student.updatedAt
+                    | date: 'dd MMM yyyy'
+                }}
+              </strong>
+            </div>
+          </div>
+        </section>
+
+        <!-- Decision -->
+        <section class="content-card decision-card">
+          <div class="card-header">
+            <div>
+              <span class="section-eyebrow">
+                Review action
+              </span>
+
+              <h2>Application Decision</h2>
+
+              <p>
+                Select a decision and provide a remark.
+              </p>
+            </div>
+          </div>
+
+          <form
+            class="decision-form"
+            [formGroup]="decisionForm"
+            (ngSubmit)="submitDecision()"
+          >
+            <div class="decision-options">
+              <button
+                type="button"
+                class="decision-option approve-option"
+                [class.selected]="
+                  selectedDecision === 'APPROVED'
+                "
+                [attr.aria-pressed]="
+                  selectedDecision === 'APPROVED'
+                "
+                (click)="selectDecision('APPROVED')"
+              >
+                <span class="decision-icon">
+                  ✓
+                </span>
+
+                <span>
+                  <strong>Approve</strong>
+                  <small>Approve this application</small>
+                </span>
+              </button>
+
+              <button
+                type="button"
+                class="decision-option reject-option"
+                [class.selected]="
+                  selectedDecision === 'REJECTED'
+                "
+                [attr.aria-pressed]="
+                  selectedDecision === 'REJECTED'
+                "
+                (click)="selectDecision('REJECTED')"
+              >
+                <span class="decision-icon">
+                  ×
+                </span>
+
+                <span>
+                  <strong>Reject</strong>
+                  <small>Reject this application</small>
+                </span>
+              </button>
+
+              <button
+                type="button"
+                class="decision-option revert-option"
+                [class.selected]="
+                  selectedDecision === 'PENDING'
+                "
+                [attr.aria-pressed]="
+                  selectedDecision === 'PENDING'
+                "
+                (click)="selectDecision('PENDING')"
+              >
+                <span class="decision-icon">
+                  ↻
+                </span>
+
+                <span>
+                  <strong>Revert</strong>
+                  <small>
+                    Send application for review
+                  </small>
+                </span>
+              </button>
+            </div>
+
+            <div
+              class="form-group"
+              *ngIf="
+                selectedDecision === 'APPROVED'
+              "
+            >
+              <label
+                class="form-label"
+                for="approvedAmount"
+              >
+                Approved Amount
+
+                <span class="required">*</span>
+              </label>
+
+              <div class="amount-input-wrapper">
+                <span class="amount-prefix">
+                  ₹
+                </span>
+
+                <input
+                  id="approvedAmount"
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  formControlName="approvedAmount"
+                  class="form-control amount-input"
+                  [class.invalid]="
+                    approvedAmountControl.invalid &&
+                    approvedAmountControl.touched
+                  "
+                  placeholder="Enter approved amount"
+                />
+              </div>
+
+              <small
+                class="form-error"
+                *ngIf="
+                  approvedAmountControl.hasError(
+                    'required'
+                  ) &&
+                  approvedAmountControl.touched
+                "
+              >
+                Approved amount is required.
+              </small>
+
+              <small
+                class="form-error"
+                *ngIf="
+                  approvedAmountControl.hasError(
+                    'min'
+                  ) &&
+                  approvedAmountControl.touched
+                "
+              >
+                Approved amount must be greater than zero.
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label
+                class="form-label"
+                for="remark"
+              >
+                Remark
+
+                <span class="required">*</span>
+              </label>
+
+              <textarea
+                id="remark"
+                rows="5"
+                formControlName="remark"
+                class="form-textarea"
+                [class.invalid]="
+                  remarkControl.invalid &&
+                  remarkControl.touched
+                "
+                placeholder="Enter a clear remark of at least 10 characters"
+                maxlength="500"
+              ></textarea>
+
+              <div class="field-footer">
+                <div>
+                  <small
+                    class="form-error"
+                    *ngIf="
+                      remarkControl.hasError(
+                        'required'
+                      ) &&
+                      remarkControl.touched
+                    "
+                  >
+                    Remark is required.
+                  </small>
+
+                  <small
+                    class="form-error"
+                    *ngIf="
+                      remarkControl.hasError(
+                        'minlength'
+                      ) &&
+                      remarkControl.touched
+                    "
+                  >
+                    Remark must contain at least 10
+                    characters.
+                  </small>
+                </div>
+
+                <small class="character-count">
+                  {{
+                    remarkControl.value?.length || 0
+                  }}/500
+                </small>
+              </div>
+            </div>
+
+            <div
+              class="alert alert-danger"
+              *ngIf="decisionErrorMessage"
+            >
+              {{ decisionErrorMessage }}
+            </div>
+
+            <div
+              class="alert alert-success"
+              *ngIf="decisionSuccessMessage"
+            >
+              {{ decisionSuccessMessage }}
+            </div>
+
+            <button
+              type="submit"
+              class="btn btn-primary btn-block submit-button"
+              [disabled]="
+                !selectedDecision ||
+                isSubmittingDecision
+              "
+            >
+              <span
+                class="button-spinner"
+                *ngIf="isSubmittingDecision"
+              ></span>
+
+              {{
+                isSubmittingDecision
+                  ? 'Submitting...'
+                  : getSubmitButtonLabel()
+              }}
+            </button>
+          </form>
+        </section>
+      </aside>
+    </main>
+  </ng-container>
+</div>

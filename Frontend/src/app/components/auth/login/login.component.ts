@@ -1,8 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { ToastService } from '../../../core/services/toast.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { LoginRequest } from '../../../core/models/auth.dtos/login.dtos';
 
 @Component({
   selector: 'app-login',
@@ -14,9 +16,12 @@ import { ToastService } from '../../../core/services/toast.service';
 export class LoginComponent {
   private readonly fb = inject(FormBuilder);
   private readonly toastService = inject(ToastService);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
   logoPath = 'VidyaSahay_Logo.png';
   submitted = false;
+  loading = false;
 
   loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -39,7 +44,24 @@ export class LoginComponent {
       return;
     }
 
-    this.toastService.success('Login form submitted successfully.');
+    this.loading = true;
+
+    let loginRequest: LoginRequest  = {
+      email: this.emailControl?.value ?? '',
+      password: this.passwordControl?.value ??  ''
+    };
+
+    this.authService.login(loginRequest).subscribe({
+      next: () => {
+        this.loading = false;
+        this.router.navigateByUrl(this.authService.getDefaultRoute());
+        this.toastService.success('User logged-in successfully.');
+      },
+      error: (err) => {
+        this.loading = false;
+        this.toastService.error(err?.error?.message ?? 'Login failed');
+      }
+    })
   }
 
   isInvalid(controlName: 'email' | 'password'): boolean {

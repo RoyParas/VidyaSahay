@@ -1,6 +1,8 @@
 .sidebar {
   width: var(--sidebar-width);
   height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: var(--bg-sidebar);
   border-right: 1px solid var(--border);
   padding: 25px 20px;
@@ -88,8 +90,8 @@
 }
 
 .sidebar-user-panel {
-  display: none;
-  margin-top: 28px;
+  display: block;
+  margin-top: auto;
   padding: 18px;
   border: 2px solid var(--border);
   border-radius: var(--radius-md);

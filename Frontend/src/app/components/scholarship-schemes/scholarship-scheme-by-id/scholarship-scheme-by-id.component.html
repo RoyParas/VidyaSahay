@@ -1,0 +1,553 @@
+<section
+  class="scheme-page"
+  aria-labelledby="scholarship-page-title"
+>
+  <!-- Back navigation -->
+  <a
+    class="scheme-back-link"
+    routerLink="/scholarship-schemes"
+    aria-label="Back to all scholarship schemes"
+  >
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M19 12H5"></path>
+      <path d="M12 19l-7-7 7-7"></path>
+    </svg>
+
+    <span>Back to scholarship schemes</span>
+  </a>
+
+  <!-- Loading state -->
+  <section
+    *ngIf="loading"
+    class="scheme-state-card"
+    aria-live="polite"
+    aria-busy="true"
+  >
+    <span
+      class="scheme-loading-spinner"
+      role="status"
+      aria-label="Loading scholarship scheme details"
+    ></span>
+
+    <h1>Loading scholarship scheme</h1>
+
+    <p>
+      Please wait while the latest scholarship information is being
+      retrieved.
+    </p>
+  </section>
+
+  <!-- Error state -->
+  <section
+    *ngIf="!loading && errorMessage"
+    class="scheme-state-card scheme-error-state"
+    role="alert"
+  >
+    <span class="scheme-state-icon scheme-state-icon-error">
+      <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="M12 8v5"></path>
+        <path d="M12 17h.01"></path>
+      </svg>
+    </span>
+
+    <h1>Unable to load scholarship scheme</h1>
+
+    <p>{{ errorMessage }}</p>
+
+    <div class="scheme-state-actions">
+      <button
+        type="button"
+        class="btn btn-primary"
+        [disabled]="!scholarshipSchemeId"
+        (click)="loadScholarshipScheme()"
+      >
+        <svg
+          class="button-icon"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path d="M20 6v5h-5"></path>
+          <path d="M4 18v-5h5"></path>
+          <path d="M18.5 9A7 7 0 0 0 6 6.5L4 9"></path>
+          <path d="M5.5 15A7 7 0 0 0 18 17.5l2-2.5"></path>
+        </svg>
+
+        <span>Try again</span>
+      </button>
+
+      <a
+        class="btn btn-secondary"
+        routerLink="/scholarship-schemes"
+      >
+        View all scholarships
+      </a>
+    </div>
+  </section>
+
+  <!-- Loaded scholarship details -->
+  <ng-container
+    *ngIf="
+      !loading &&
+      !errorMessage &&
+      scholarshipScheme as scheme
+    "
+  >
+    <!-- Main heading -->
+    <header class="scheme-hero">
+      <div class="scheme-hero-content">
+        <div class="scheme-heading-row">
+          <span class="scheme-hero-icon" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <path d="M3 10 12 5l9 5-9 5-9-5Z"></path>
+              <path d="M7 12.5V17c2.7 2 7.3 2 10 0v-4.5"></path>
+              <path d="M21 10v6"></path>
+            </svg>
+          </span>
+
+          <div>
+            <p class="scheme-eyebrow">
+              Scholarship scheme
+            </p>
+
+            <h1 id="scholarship-page-title">
+              {{ scheme.scholarshipName }}
+            </h1>
+          </div>
+        </div>
+
+        <p class="scheme-description">
+          Review the scholarship benefit, eligibility criteria,
+          application period, required documents, and payment
+          information.
+        </p>
+      </div>
+
+      <span [ngClass]="getStatusClass(scheme.status)">
+        {{ formatEnumValue(scheme.status) }}
+      </span>
+    </header>
+
+    <!-- Scholarship summary -->
+    <section
+      class="scheme-summary-grid"
+      aria-label="Scholarship scheme summary"
+    >
+      <!-- Scholarship amount -->
+      <article class="summary-card">
+        <span class="summary-icon" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            focusable="false"
+          >
+            <rect
+              x="3"
+              y="6"
+              width="18"
+              height="12"
+              rx="2"
+            ></rect>
+            <path d="M7 10h4"></path>
+            <path d="M7 14h7"></path>
+            <circle cx="17" cy="12" r="2"></circle>
+          </svg>
+        </span>
+
+        <div>
+          <span class="summary-label">
+            Scholarship amount
+          </span>
+
+          <strong>
+            {{
+              scheme.scholarshipAmount
+                | currency:'INR':'symbol':'1.0-0':'en-IN'
+            }}
+          </strong>
+
+          <small>
+            {{ formatEnumValue(scheme.amountType) }}
+          </small>
+        </div>
+      </article>
+
+      <!-- Scholarship type -->
+      <article class="summary-card">
+        <span class="summary-icon" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            focusable="false"
+          >
+            <path d="M3 10 12 5l9 5-9 5-9-5Z"></path>
+            <path d="M7 12.5V17c2.7 2 7.3 2 10 0v-4.5"></path>
+          </svg>
+        </span>
+
+        <div>
+          <span class="summary-label">
+            Scholarship type
+          </span>
+
+          <strong>
+            {{ formatEnumValue(scheme.scholarshipType) }}
+          </strong>
+
+          <small>
+            Academic year {{ scheme.academicYear }}
+          </small>
+        </div>
+      </article>
+
+      <!-- Payment frequency -->
+      <article class="summary-card">
+        <span class="summary-icon" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            focusable="false"
+          >
+            <circle cx="12" cy="12" r="9"></circle>
+            <path d="M12 7v5l3 2"></path>
+          </svg>
+        </span>
+
+        <div>
+          <span class="summary-label">
+            Payment frequency
+          </span>
+
+          <strong>
+            {{ formatEnumValue(scheme.paymentFrequency) }}
+          </strong>
+        </div>
+      </article>
+
+      <!-- Application period -->
+      <article class="summary-card">
+        <span class="summary-icon" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            focusable="false"
+          >
+            <rect
+              x="3"
+              y="5"
+              width="18"
+              height="16"
+              rx="2"
+            ></rect>
+            <path d="M16 3v4"></path>
+            <path d="M8 3v4"></path>
+            <path d="M3 10h18"></path>
+          </svg>
+        </span>
+
+        <div>
+          <span class="summary-label">
+            Application period
+          </span>
+
+          <strong>
+            {{ scheme.startDate | date:'dd MMM yyyy' }}
+            to
+            {{ scheme.endDate | date:'dd MMM yyyy' }}
+          </strong>
+        </div>
+      </article>
+    </section>
+
+    <!-- Scholarship detail sections -->
+    <div class="scheme-content-grid">
+      <!-- Eligibility criteria -->
+      <section class="detail-card">
+        <header class="detail-card-header">
+          <span class="detail-card-icon" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <circle cx="12" cy="8" r="4"></circle>
+              <path d="M5 21v-2a7 7 0 0 1 14 0v2"></path>
+            </svg>
+          </span>
+
+          <div>
+            <h2>Eligibility criteria</h2>
+            <p>
+              Applicant requirements for this scholarship.
+            </p>
+          </div>
+        </header>
+
+        <dl class="detail-list">
+          <div class="detail-row">
+            <dt>Applicant age</dt>
+            <dd>
+              {{ scheme.applierMinAge }} to
+              {{ scheme.applierMaxAge }} years
+            </dd>
+          </div>
+
+          <div class="detail-row">
+            <dt>Maximum family income</dt>
+            <dd>
+              {{
+                scheme.maxFamilyAnnualIncome
+                  | currency:'INR':'symbol':'1.0-0':'en-IN'
+              }}
+              per year
+            </dd>
+          </div>
+
+          <div class="detail-row">
+            <dt>Minimum percentage</dt>
+            <dd>
+              {{ scheme.minPercentageCriteria | number:'1.0-2' }}%
+            </dd>
+          </div>
+
+          <div class="detail-row">
+            <dt>Academic year</dt>
+            <dd>{{ scheme.academicYear }}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <!-- Scholarship benefit -->
+      <section class="detail-card">
+        <header class="detail-card-header">
+          <span class="detail-card-icon" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <rect
+                x="3"
+                y="6"
+                width="18"
+                height="12"
+                rx="2"
+              ></rect>
+              <path d="M7 10h5"></path>
+              <path d="M7 14h4"></path>
+              <circle cx="17" cy="12" r="2"></circle>
+            </svg>
+          </span>
+
+          <div>
+            <h2>Scholarship benefit</h2>
+            <p>
+              Amount, payment, and scheme budget information.
+            </p>
+          </div>
+        </header>
+
+        <dl class="detail-list">
+          <div class="detail-row">
+            <dt>Scholarship amount</dt>
+            <dd>
+              {{
+                scheme.scholarshipAmount
+                  | currency:'INR':'symbol':'1.0-0':'en-IN'
+              }}
+            </dd>
+          </div>
+
+          <div class="detail-row">
+            <dt>Amount type</dt>
+            <dd>
+              {{ formatEnumValue(scheme.amountType) }}
+            </dd>
+          </div>
+
+          <div class="detail-row">
+            <dt>Payment frequency</dt>
+            <dd>
+              {{ formatEnumValue(scheme.paymentFrequency) }}
+            </dd>
+          </div>
+
+          <div class="detail-row">
+            <dt>Total scheme budget</dt>
+            <dd>
+              {{
+                scheme.totalSchemeBudget
+                  | currency:'INR':'symbol':'1.0-0':'en-IN'
+              }}
+            </dd>
+          </div>
+        </dl>
+      </section>
+
+      <!-- Required documents -->
+      <section class="detail-card">
+        <header class="detail-card-header">
+          <span class="detail-card-icon" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <path d="M7 3h8l4 4v14H7Z"></path>
+              <path d="M15 3v5h5"></path>
+              <path d="M10 13h6"></path>
+              <path d="M10 17h6"></path>
+            </svg>
+          </span>
+
+          <div>
+            <h2>Required documents</h2>
+            <p>
+              Documents required while applying for the scholarship.
+            </p>
+          </div>
+        </header>
+
+        <div
+          *ngIf="
+            scheme.requiredDocuments?.length;
+            else noDocuments
+          "
+          class="document-list"
+        >
+          <div
+            *ngFor="
+              let document of scheme.requiredDocuments;
+              trackBy: trackByValue
+            "
+            class="document-item"
+          >
+            <span class="document-check" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                focusable="false"
+              >
+                <path d="m5 12 4 4L19 6"></path>
+              </svg>
+            </span>
+
+            <span>{{ document }}</span>
+          </div>
+        </div>
+
+        <ng-template #noDocuments>
+          <p class="empty-value">
+            No document requirements have been specified.
+          </p>
+        </ng-template>
+      </section>
+
+      <!-- Eligible groups -->
+      <section class="detail-card">
+        <header class="detail-card-header">
+          <span class="detail-card-icon" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <circle cx="9" cy="8" r="3"></circle>
+              <circle cx="17" cy="9" r="2"></circle>
+              <path d="M3 20v-2a6 6 0 0 1 12 0v2"></path>
+              <path d="M15 14a5 5 0 0 1 6 5v1"></path>
+            </svg>
+          </span>
+
+          <div>
+            <h2>Eligible groups</h2>
+            <p>
+              Professions and categories covered by the scheme.
+            </p>
+          </div>
+        </header>
+
+        <!-- Eligible professions -->
+        <div class="eligibility-group">
+          <h3>Eligible professions</h3>
+
+          <div
+            *ngIf="
+              scheme.eligibleProfessions?.length;
+              else noProfessions
+            "
+            class="scheme-chip-list"
+          >
+            <span
+              *ngFor="
+                let profession of scheme.eligibleProfessions;
+                trackBy: trackByValue
+              "
+              class="scheme-chip"
+            >
+              {{ profession }}
+            </span>
+          </div>
+
+          <ng-template #noProfessions>
+            <p class="empty-value">
+              No profession restriction specified.
+            </p>
+          </ng-template>
+        </div>
+
+        <!-- Eligible categories -->
+        <div class="eligibility-group">
+          <h3>Eligible categories</h3>
+
+          <div
+            *ngIf="
+              scheme.eligibleCategories?.length;
+              else noCategories
+            "
+            class="scheme-chip-list"
+          >
+            <span
+              *ngFor="
+                let category of scheme.eligibleCategories;
+                trackBy: trackByValue
+              "
+              class="scheme-chip scholarship-category-chip"
+            >
+              {{ category }}
+            </span>
+          </div>
+
+          <ng-template #noCategories>
+            <p class="empty-value">
+              No category restriction specified.
+            </p>
+          </ng-template>
+        </div>
+      </section>
+    </div>
+
+    <!-- Reference details -->
+    <section
+      class="scheme-reference-card"
+      aria-label="Scholarship reference information"
+    >
+      <div>
+        <span>Scholarship scheme ID</span>
+        <strong>
+          {{ scheme.scholarshipSchemeId }}
+        </strong>
+      </div>
+
+      <div>
+        <span>Academic year</span>
+        <strong>
+          {{ scheme.academicYear }}
+        </strong>
+      </div>
+    </section>
+  </ng-container>
+</section>

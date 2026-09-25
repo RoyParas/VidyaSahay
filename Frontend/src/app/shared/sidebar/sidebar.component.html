@@ -34,17 +34,10 @@
   </nav>
 
   <div class="sidebar-user-panel" *ngIf="isLoggedIn">
-    <div class="sidebar-user-menu-wrap">
     <div class="sidebar-user-top">
-      <button
-        class="user-avatar small user-avatar-button"
-        type="button"
-        (click)="toggleUserMenu()"
-        [attr.aria-expanded]="isUserMenuOpen"
-        aria-label="Open profile menu"
-      >
+      <span class="user-avatar small user-avatar-button" aria-hidden="true">
         {{ userInitial }}
-      </button>
+      </span>
 
       <div>
         <p class="sidebar-user-name">{{ userName }}</p>
@@ -52,21 +45,13 @@
       </div>
     </div>
 
-    <div class="sidebar-user-actions" *ngIf="isUserMenuOpen">
-      <button type="button" class="sidebar-action-link" (click)="goToProfile()">
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5Z"></path>
-        </svg>
-        <span>My Profile</span>
-      </button>
-
+    <div class="sidebar-user-actions">
       <button type="button" class="sidebar-action-link" (click)="logout()">
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
           <path d="M10 17v-2H4V9h6V7l4 5-4 5Zm1 4h7a2 2 0 0 0 2-2v-4h-2v4h-7v2ZM18 5h-7V3h7a2 2 0 0 1 2 2v4h-2V5Z"></path>
         </svg>
         <span>Logout</span>
       </button>
-    </div>
     </div>
   </div>
 </aside>

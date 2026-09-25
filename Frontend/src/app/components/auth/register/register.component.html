@@ -19,8 +19,8 @@
               autocomplete="name"
               [class.invalid]="isInvalid('firstName')"
             />
-            <div class="form-error" *ngIf="firstNameControl?.errors && (firstNameControl?.touched || submitted)">
-              <span *ngIf="firstNameControl?.errors?.['required']">Full name is required.</span>
+            <div class="form-error" *ngIf="control('firstName')?.errors && (control('firstName')?.touched || submitted)">
+              <span *ngIf="control('firstName')?.errors?.['required']">First Name is required.</span>
             </div>
           </div>
 
@@ -34,8 +34,8 @@
               autocomplete="name"
               [class.invalid]="isInvalid('lastName')"
             />
-            <div class="form-error" *ngIf="lastNameControl?.errors && (lastNameControl?.touched || submitted)">
-              <span *ngIf="lastNameControl?.errors?.['required']">Full name is required.</span>
+            <div class="form-error" *ngIf="control('lastName')?.errors && (control('lastName')?.touched || submitted)">
+              <span *ngIf="control('lastName')?.errors?.['required']">Last Name is required.</span>
             </div>
           </div>
 
@@ -49,9 +49,9 @@
               autocomplete="email"
               [class.invalid]="isInvalid('email')"
             />
-            <div class="form-error" *ngIf="emailControl?.errors && (emailControl?.touched || submitted)">
-              <span *ngIf="emailControl?.errors?.['required']">Email is required.</span>
-              <span *ngIf="emailControl?.errors?.['email']">Enter a valid email address.</span>
+            <div class="form-error" *ngIf="control('email')?.errors && (control('email')?.touched || submitted)">
+              <span *ngIf="control('email')?.errors?.['required']">Email is required.</span>
+              <span *ngIf="control('email')?.errors?.['email']">Enter a valid email address.</span>
             </div>
           </div>
 
@@ -66,9 +66,9 @@
               maxlength="10"
               [class.invalid]="isInvalid('mobile')"
             />
-            <div class="form-error" *ngIf="mobileControl?.errors && (mobileControl?.touched || submitted)">
-              <span *ngIf="mobileControl?.errors?.['required']">Mobile number is required.</span>
-              <span *ngIf="mobileControl?.errors?.['pattern']">Enter a valid 10-digit mobile number.</span>
+            <div class="form-error" *ngIf="control('mobile')?.errors && (control('mobile')?.touched || submitted)">
+              <span *ngIf="control('mobile')?.errors?.['required']">Mobile number is required.</span>
+              <span *ngIf="control('mobile')?.errors?.['pattern']">Enter a valid 10-digit mobile number.</span>
             </div>
           </div>
 
@@ -82,9 +82,9 @@
               autocomplete="new-password"
               [class.invalid]="isInvalid('password')"
             />
-            <div class="form-error" *ngIf="passwordControl?.errors && (passwordControl?.touched || submitted)">
-              <span *ngIf="passwordControl?.errors?.['required']">Password is required.</span>
-              <span *ngIf="passwordControl?.errors?.['minlength']">Password must be at least 8 characters.</span>
+            <div class="form-error" *ngIf="control('password')?.errors && (control('password')?.touched || submitted)">
+              <span *ngIf="control('password')?.errors?.['required']">Password is required.</span>
+              <span *ngIf="control('password')?.errors?.['pattern']">Password must be of minimum 8 characters and should include atleast one uppercase, lowercase, number and special character</span>
             </div>
           </div>
 
@@ -102,7 +102,7 @@
               class="form-error"
               *ngIf="isInvalid('confirmPassword') || isConfirmPasswordMismatch()"
             >
-              <span *ngIf="confirmPasswordControl?.errors?.['required']">Confirm password is required.</span>
+              <span *ngIf="control('confirmPassword')?.errors?.['required']">Confirm password is required.</span>
               <span *ngIf="isConfirmPasswordMismatch()">Passwords do not match.</span>
             </div>
           </div>
@@ -112,11 +112,14 @@
           <input type="checkbox" formControlName="terms" />
           I agree to the terms and confirm that the details are accurate.<span class = "required">*</span>
         </label>
-        <div class="form-error" *ngIf="termsControl?.errors && (termsControl?.touched || submitted)">
-          <span *ngIf="termsControl?.errors?.['required']">You must accept the terms.</span>
+        <div class="form-error" *ngIf="control('terms')?.errors && (control('terms')?.touched || submitted)">
+          <span *ngIf="control('terms')?.errors?.['required']">You must accept the terms.</span>
         </div>
 
-        <button class="btn btn-primary" type="submit">Register</button>
+        <button class="btn btn-primary" type="submit" [disabled]="loading || registerForm.invalid">
+          <span *ngIf="loading" class="spinner"></span>
+          {{ loading ? 'Registering...' : 'Register' }}
+        </button>
       </form>
       <a class="btn btn-secondary" routerLink="/">Back to Home</a>
 

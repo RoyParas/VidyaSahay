@@ -1,0 +1,226 @@
+<section class="institute-page">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">Administration</p>
+      <h1>Institutes</h1>
+      <p class="page-intro">Manage institutes registered on VidyaSahay.</p>
+    </div>
+    <button
+      *ngIf="isAdmin"
+      class="btn btn-primary create-button"
+      type="button"
+      (click)="openModal()"
+    >
+      <span aria-hidden="true">&#43;</span> Create institute
+    </button>
+  </header>
+
+  <app-common-table
+    title=""
+    subtitle=""
+    [columns]="columns"
+    [rows]="rows"
+    [loading]="loading"
+    [emptyTitle]="
+      errorMessage ? 'Unable to load institutes' : 'No institutes found'
+    "
+    [emptyMessage]="errorMessage || 'There are no institutes to display.'"
+    [showIndex]="true"
+  >
+  </app-common-table>
+</section>
+
+<div
+  *ngIf="modalOpen"
+  class="modal-backdrop"
+  (click)="$event.target === $event.currentTarget && closeModal()"
+>
+  <section
+    class="institute-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-title"
+  >
+    <header class="modal-header">
+      <div>
+        <p class="eyebrow">New account</p>
+        <h2 id="modal-title">Create institute</h2>
+        <p>Enter the institute contact and account details.</p>
+      </div>
+      <button
+        type="button"
+        class="modal-close"
+        aria-label="Close dialog"
+        (click)="closeModal()"
+        [disabled]="creating"
+      >
+        &#215;
+      </button>
+    </header>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="form-section">
+        <h3>Contact details</h3>
+        <div class="form-grid">
+          <label class="field"
+            ><span>First name <b>*</b></span
+            ><input
+              formControlName="firstName"
+              autocomplete="given-name"
+              [class.invalid]="fieldInvalid('firstName')"
+            /><small *ngIf="fieldInvalid('firstName')"
+              >Enter a first name (up to 100 characters).</small
+            ></label
+          >
+          <label class="field"
+            ><span>Last name <b>*</b></span
+            ><input
+              formControlName="lastName"
+              autocomplete="family-name"
+              [class.invalid]="fieldInvalid('lastName')"
+            /><small *ngIf="fieldInvalid('lastName')"
+              >Enter a last name (up to 100 characters).</small
+            ></label
+          >
+          <label class="field"
+            ><span>Email <b>*</b></span
+            ><input
+              type="email"
+              formControlName="email"
+              autocomplete="email"
+              [class.invalid]="fieldInvalid('email')"
+            /><small *ngIf="fieldInvalid('email')"
+              >Enter a valid email address.</small
+            ></label
+          >
+          <label class="field"
+            ><span>Mobile number <b>*</b></span
+            ><input
+              type="tel"
+              inputmode="numeric"
+              maxlength="10"
+              formControlName="mobile"
+              autocomplete="tel"
+              [class.invalid]="fieldInvalid('mobile')"
+            /><small *ngIf="fieldInvalid('mobile')"
+              >Enter a valid 10-digit Indian mobile number.</small
+            ></label
+          >
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Institute details</h3>
+        <div class="form-grid">
+          <label class="field"
+            ><span>Institute name <b>*</b></span
+            ><input
+              formControlName="instituteName"
+              [class.invalid]="fieldInvalid('instituteName')"
+            /><small *ngIf="fieldInvalid('instituteName')"
+              >Institute name is required (up to 200 characters).</small
+            ></label
+          >
+          <label class="field"
+            ><span>Address record ID <b>*</b></span
+            ><input
+              formControlName="addressId"
+              placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+              [class.invalid]="fieldInvalid('addressId')"
+            /><small *ngIf="fieldInvalid('addressId')"
+              >Enter a valid address UUID.</small
+            ><small class="hint"
+              >The API currently requires an existing address ID.</small
+            ></label
+          >
+          <label class="field"
+            ><span>Location</span
+            ><input
+              formControlName="location"
+              placeholder="Campus, area or landmark"
+            /><small *ngIf="fieldInvalid('location')"
+              >Use 255 characters or fewer.</small
+            ></label
+          >
+          <label class="field"
+            ><span>Pincode <b>*</b></span
+            ><input
+              inputmode="numeric"
+              maxlength="6"
+              formControlName="pincode"
+              [class.invalid]="fieldInvalid('pincode')"
+            /><small *ngIf="fieldInvalid('pincode')"
+              >Enter a 6-digit pincode.</small
+            ></label
+          >
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Bank account <span class="optional">Optional</span></h3>
+        <div class="form-grid">
+          <label class="field"
+            ><span>Bank name</span
+            ><input
+              formControlName="bankName"
+              [class.invalid]="fieldInvalid('bankName')"
+            /><small *ngIf="fieldInvalid('bankName')"
+              >Use 150 characters or fewer.</small
+            ></label
+          >
+          <label class="field"
+            ><span>Branch name</span
+            ><input
+              formControlName="branchName"
+              [class.invalid]="fieldInvalid('branchName')"
+            /><small *ngIf="fieldInvalid('branchName')"
+              >Use 150 characters or fewer.</small
+            ></label
+          >
+          <label class="field"
+            ><span>IFSC code</span
+            ><input
+              formControlName="ifscCode"
+              maxlength="11"
+              (input)="
+                $any($event.target).value = $any(
+                  $event.target
+                ).value.toUpperCase()
+              "
+              [class.invalid]="fieldInvalid('ifscCode')"
+            /><small *ngIf="fieldInvalid('ifscCode')"
+              >Enter a valid 11-character IFSC code.</small
+            ></label
+          >
+          <label class="field"
+            ><span>Account number</span
+            ><input
+              inputmode="numeric"
+              formControlName="accountNumber"
+              [class.invalid]="fieldInvalid('accountNumber')"
+            /><small *ngIf="fieldInvalid('accountNumber')"
+              >Enter 9 to 18 digits.</small
+            ></label
+          >
+        </div>
+      </div>
+
+      <footer class="modal-actions">
+        <span class="required-note">* Required fields</span>
+        <div>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="closeModal()"
+            [disabled]="creating"
+          >
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="creating">
+            {{ creating ? "Creating..." : "Create institute" }}
+          </button>
+        </div>
+      </footer>
+    </form>
+  </section>
+</div>

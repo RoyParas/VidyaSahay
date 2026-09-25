@@ -1,0 +1,13 @@
+<app-common-table
+  title="Scholarship schemes"
+  subtitle="Scholarships available to eligible students."
+  [columns]="columns"
+  [rows]="rows"
+  [loading]="loading"
+  [emptyTitle]="errorMessage
+      ? 'Unable to load scholarship schemes'
+      : 'No scholarship schemes found'"
+  [emptyMessage]="errorMessage || 'There are no scholarship schemes to display.'"
+  [showIndex]="true"
+  (rowClick)="onRowClick($event)"
+></app-common-table>
