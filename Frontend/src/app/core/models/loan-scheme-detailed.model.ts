@@ -8,19 +8,26 @@ export interface LoanSchemeDetails {
   status: string;
   effectiveFrom: string;
   effectiveTo: string;
-  minInterestRate: number;
+  minInterestRate: number | null;
   maxInterestRate: number;
   disbursementType: string;
   applierMinAge: number;
   applierMaxAge: number;
   coBorrowerRequired: boolean;
-  minCreditScore: number;
+  minCreditScore: number | null;
   requiredDocumentIds: string[];
+  documentRequirements: SchemeDocumentRequirement[];
   eligibleProfessionIds: string[];
   minTenureForRepayment: number;
   maxTenureForRepayment: number;
   prepaymentAllowed: boolean;
-  foreclosureCharges: number;
+  foreclosureCharges: number | null;
   coursePeriodIncluded: boolean;
   additionalMonths: number;
+}
+
+export interface SchemeDocumentRequirement {
+  documentTypeId: string;
+  name: string;
+  description: string | null;
 }

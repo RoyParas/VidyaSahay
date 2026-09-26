@@ -48,13 +48,17 @@ public class ApplicationController {
     @PreAuthorize("hasAnyRole('STUDENT', 'BANK', 'GOVERNMENT', 'INSTITUTE', 'ADMIN')")
     public ResponseEntity<ApplicationDetailResponse>
     getApplicationById(
-            @PathVariable UUID applicationId
+            @PathVariable UUID applicationId,
+            @AuthenticationPrincipal CustomUserPrincipal principal
     ) {
         return ResponseEntity.ok(
-                applicationService.getApplicationById(
-                        applicationId
-                )
+                applicationService.getApplicationById(applicationId, principal)
         );
+    }
+
+    /** Retained for direct controller callers; the HTTP handler always supplies the authenticated principal. */
+    public ResponseEntity<ApplicationDetailResponse> getApplicationById(UUID applicationId) {
+        return ResponseEntity.ok(applicationService.getApplicationById(applicationId));
     }
 
     @Operation(
@@ -96,6 +100,16 @@ public class ApplicationController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
+    }
+
+    @Operation(summary = "Resubmit a reverted application with updated documents")
+    @PostMapping(value = "/{applicationId}/resubmit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<ApplicationDetailResponse> resubmit(
+            @PathVariable UUID applicationId,
+            @ModelAttribute ApplyApplicationRequest request,
+            @AuthenticationPrincipal CustomUserPrincipal principal) {
+        return ResponseEntity.ok(applicationService.resubmit(applicationId, request, principal));
     }
 
     @Operation(

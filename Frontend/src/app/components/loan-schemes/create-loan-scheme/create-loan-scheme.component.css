@@ -250,6 +250,26 @@ h1 {
   padding: 10px 12px;
   font-size: 12px;
 }
+.review-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 26px;
+  padding: 16px 18px;
+  border: 1px solid #cfe0f4;
+  border-left: 4px solid #2872bd;
+  border-radius: 10px;
+  background: #f2f7fd;
+  color: #405a78;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.review-note strong {
+  flex: 0 0 auto;
+  color: #174e91;
+  font-size: 13px;
+}
+.review-note span { min-width: 0; }
 @media (max-width: 640px) {
   .scheme-page {
     width: min(100% - 28px, 1040px);
@@ -300,4 +320,5 @@ h1 {
   .button {
     padding: 0 14px;
   }
+  .review-note { flex-direction: column; gap: 4px; }
 }

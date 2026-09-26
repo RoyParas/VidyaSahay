@@ -57,7 +57,8 @@ public final class TestData {
                 "hashed-password",
                 role,
                 true,
-                false);
+                false,
+                true);
     }
 
     public static CustomUserPrincipal principal(RoleName role) {

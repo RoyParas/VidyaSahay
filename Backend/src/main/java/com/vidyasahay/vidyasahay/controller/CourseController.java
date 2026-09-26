@@ -37,7 +37,7 @@ public class CourseController {
          * Method: GET
          * URL: /api/courses
          */
-        @PreAuthorize("hasAnyRole('INSTITUTE' ,'BANK','ADMIN','GOVERNMENT')")
+        @PreAuthorize("hasAnyRole('INSTITUTE' ,'BANK','ADMIN','GOVERNMENT','STUDENT')")
         @GetMapping
         public ResponseEntity<List<CourseResponse>> getAllCourses() {
 
@@ -103,7 +103,7 @@ public class CourseController {
          * Method: GET
          * URL: /api/courses/institute/{instituteId}
          */
-        @PreAuthorize("hasRole('INSTITUTE')")
+        @PreAuthorize("hasAnyRole('INSTITUTE', 'STUDENT')")
         @GetMapping("/institute/{instituteId}")
         public ResponseEntity<List<CourseResponse>> getCoursesByInstituteId(
                         @PathVariable UUID instituteId) {

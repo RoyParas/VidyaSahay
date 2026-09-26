@@ -9,11 +9,13 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.vidyasahay.vidyasahay.dto.request.CompleteStudentProfileRequest;
+import com.vidyasahay.vidyasahay.dto.request.UpdateMyStudentProfileRequest;
 import com.vidyasahay.vidyasahay.dto.response.StudentDetailedResponse;
 import com.vidyasahay.vidyasahay.dto.response.StudentSummaryResponse;
 import com.vidyasahay.vidyasahay.service.CustomUserPrincipal;
@@ -44,6 +46,21 @@ public class StudentController {
     @GetMapping("/all")
     public ResponseEntity<List<StudentSummaryResponse>> getAllStudents() {
         return ResponseEntity.ok(studentService.getAllStudents());
+    }
+
+    @PreAuthorize("hasRole('STUDENT')")
+    @GetMapping("/me")
+    public ResponseEntity<StudentDetailedResponse> getMyProfile(
+            @AuthenticationPrincipal CustomUserPrincipal principal) {
+        return ResponseEntity.ok(studentService.getStudentByUserId(principal.getUserId()));
+    }
+
+    @PreAuthorize("hasRole('STUDENT')")
+    @PutMapping("/me/profile")
+    public ResponseEntity<StudentDetailedResponse> updateMyProfile(
+            @AuthenticationPrincipal CustomUserPrincipal principal,
+            @Valid @RequestBody UpdateMyStudentProfileRequest request) {
+        return ResponseEntity.ok(studentService.updateMyProfile(principal.getUserId(), request));
     }
 
     

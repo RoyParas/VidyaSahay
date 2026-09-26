@@ -10,5 +10,6 @@ public record AuthenticatedUserResponse(
         String lastName,
         String email,
         RoleName role,
-        boolean mustChangePassword
+        boolean mustChangePassword,
+        boolean profileCompleted
 ) {}

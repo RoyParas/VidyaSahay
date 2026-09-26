@@ -50,6 +50,22 @@ public class DocumentController {
 		return ResponseEntity.ok(response);
 	}
 
+	@GetMapping(value = "/{documentId}/file")
+	@PreAuthorize("hasAnyRole('STUDENT','GOVERNMENT','BANK')")
+	public ResponseEntity<Resource> getDocumentFile(
+			@AuthenticationPrincipal CustomUserPrincipal principal,
+			@PathVariable UUID documentId) {
+		DocumentFile document = studentDocumentService.loadDocumentFile(
+				documentId, principal.getUserId(), principal.getRole().name());
+		return ResponseEntity.ok()
+				.contentType(MediaType.parseMediaType(document.contentType()))
+				.header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.inline()
+						.filename(document.fileName(), StandardCharsets.UTF_8)
+						.build()
+						.toString())
+				.body(document.resource());
+	}
+
 	@PatchMapping("/{documentId}/status")
 	@PreAuthorize("hasAnyRole('GOVERNMENT','BANK')")
 	public ResponseEntity<StudentDocumentResponse> updateDocumentStatus(

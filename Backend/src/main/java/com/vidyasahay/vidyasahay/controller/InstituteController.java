@@ -47,7 +47,7 @@ public class InstituteController {
     }
 
     @GetMapping("/all")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STUDENT')")
     public ResponseEntity<List<InstituteAccountResponse>> getAllInstitutes() {
         return ResponseEntity.ok(instituteService.getAllInstitutes());
     }

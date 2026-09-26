@@ -78,6 +78,7 @@ export class SidebarComponent implements OnInit {
               { label: 'Eligible Scholarships', route: '/scholarship-schemes/eligible' },
               { label: 'Eligible Loans', route: '/loan-schemes/eligible' },
               { label: 'My Applications', route: '/my-applications' },
+              { label: 'My Profile', route: '/my-profile' },
         ];
         break;
 

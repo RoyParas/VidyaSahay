@@ -7,11 +7,15 @@ import {
   inject,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
 
 import { ScholarshipSchemeDetails } from '../../../core/models/scholarship-scheme.model';
 import { ScholarshipSchemeService } from '../../../core/services/scholarship-scheme.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { UserRole } from '../../../core/enums/user-role.enum';
+import { StudentService } from '../../../core/services/student.service';
 
 @Component({
   selector: 'app-scholarship-scheme-by-id',
@@ -28,17 +32,30 @@ import { ToastService } from '../../../core/services/toast.service';
 })
 export class ScholarshipSchemeByIdComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
-  private readonly scholarshipSchemeService = inject(
-    ScholarshipSchemeService
-  );
+  private readonly scholarshipSchemeService = inject(ScholarshipSchemeService);
+  private readonly authService = inject(AuthService);
   private readonly toastService = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
+  private readonly studentService = inject(StudentService);
 
   scholarshipScheme: ScholarshipSchemeDetails | null = null;
   scholarshipSchemeId = '';
+  canUpdate = false;
+  canApply = false;
 
   loading = true;
   errorMessage = '';
+
+  get isStudent() : boolean {
+    return this.authService.getRole() === UserRole.STUDENT;
+  }
+
+  get schemeListRoute(): string {
+    return this.authService.getRole() === UserRole.GOVERNMENT
+      ? '/scholarship-schemes-created-by-me'
+      : this.isStudent ? '/scholarship-schemes/eligible' : '/scholarship-schemes';
+  }
 
   ngOnInit(): void {
     this.scholarshipSchemeId =
@@ -48,13 +65,9 @@ export class ScholarshipSchemeByIdComponent implements OnInit {
 
     if (!this.scholarshipSchemeId) {
       this.loading = false;
-      this.errorMessage =
-        'The scholarship scheme ID is missing from the URL.';
+      this.errorMessage = 'The scholarship scheme ID is missing from the URL.';
 
-      this.toastService.error(
-        this.errorMessage,
-        'Unable to load scholarship'
-      );
+      this.toastService.error(this.errorMessage,'Unable to load scholarship');
 
       return;
     }
@@ -78,17 +91,50 @@ export class ScholarshipSchemeByIdComponent implements OnInit {
         next: (scholarshipScheme) => {
           this.scholarshipScheme = scholarshipScheme;
           this.loading = false;
+          this.checkApplicationEligibility();
+          if (this.authService.getRole() === UserRole.GOVERNMENT) {
+            this.scholarshipSchemeService.getScholarshipSchemesCreatedByMe()
+              .pipe(takeUntilDestroyed(this.destroyRef))
+              .subscribe({
+                next: schemes => this.canUpdate = schemes.some(scheme => scheme.scholarshipSchemeId === this.scholarshipSchemeId),
+                error: () => this.canUpdate = false
+              });
+          }
         },
         error: (error: HttpErrorResponse) => {
           this.loading = false;
           this.errorMessage = this.getErrorMessage(error);
 
-          this.toastService.error(
-            this.errorMessage,
-            'Unable to load scholarship'
-          );
+          this.toastService.error(this.errorMessage,'Unable to load scholarship');
         },
       });
+  }
+
+  private checkApplicationEligibility(): void {
+    if (!this.isStudent || this.route.snapshot.queryParamMap.get('eligible') !== 'true') return;
+    const annualFamilyIncome = Number(this.route.snapshot.queryParamMap.get('annualFamilyIncome'));
+    const academicPercentage = Number(this.route.snapshot.queryParamMap.get('academicPercentage'));
+    if (!Number.isFinite(annualFamilyIncome) || !Number.isFinite(academicPercentage)) return;
+    forkJoin({
+      profile: this.studentService.getMyProfile(),
+      eligibleSchemes: this.scholarshipSchemeService.getEligibleScholarshipSchemes(annualFamilyIncome, academicPercentage)
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: ({ profile, eligibleSchemes }) => {
+        this.canApply = profile.verificationStatus === 'VERIFIED'
+          && eligibleSchemes.some(scheme => scheme.scholarshipSchemeId === this.scholarshipSchemeId);
+      },
+      error: () => this.canApply = false
+    });
+  }
+
+  applyForScheme(): void {
+    if (!this.canApply) return;
+    this.router.navigate(['/applications/apply/SCHOLARSHIP', this.scholarshipSchemeId], {
+      queryParams: {
+        annualFamilyIncome: this.route.snapshot.queryParamMap.get('annualFamilyIncome'),
+        academicPercentage: this.route.snapshot.queryParamMap.get('academicPercentage')
+      }
+    });
   }
 
   formatEnumValue(value: string | null | undefined): string {
@@ -101,10 +147,7 @@ export class ScholarshipSchemeByIdComponent implements OnInit {
       .toLowerCase()
       .split('_')
       .filter(Boolean)
-      .map(
-        (word) =>
-          word.charAt(0).toUpperCase() + word.slice(1)
-      )
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
   }
 

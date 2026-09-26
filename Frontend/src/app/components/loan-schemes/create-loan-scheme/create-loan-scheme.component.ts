@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { FormBuilder, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { LoanSchemeService } from '../../../core/services/loan-scheme.service';
 import { SchemeCatalogService, DocumentTypeOption, ProfessionOption } from '../../../core/services/scheme-catalog.service';
+import { LoanSchemeDetails } from '../../../core/models/loan-scheme-detailed.model';
 
 @Component({
   selector: 'app-create-loan-scheme',
@@ -15,6 +16,7 @@ import { SchemeCatalogService, DocumentTypeOption, ProfessionOption } from '../.
 })
 export class CreateLoanSchemeComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
+  private readonly route = inject(ActivatedRoute);
   readonly steps = ['Scheme details', 'Eligibility & documents', 'Repayment'];
   readonly minDate = this.localDate(new Date());
   step = 0;
@@ -24,6 +26,8 @@ export class CreateLoanSchemeComponent implements OnInit {
   loadError = '';
   submitting = false;
   submitError = '';
+  loanSchemeId = '';
+  readonly schemeStatuses = ['ACTIVE', 'INACTIVE'];
   readonly interestTypes = ['FIXED', 'FLOATING'];
   readonly disbursementTypes = ['YEARLY', 'ONE_TIME'];
 
@@ -34,7 +38,7 @@ export class CreateLoanSchemeComponent implements OnInit {
     minLoanAmount: [null as number | null, [Validators.required, Validators.min(0.01)]],
     maxLoanAmount: [null as number | null, [Validators.required, Validators.min(0.01)]],
     interestType: ['', Validators.required],
-    minInterestRate: [null as number | null, [Validators.min(0)]],
+    minInterestRate: [null as number | null, [Validators.required, Validators.min(0)]],
     maxInterestRate: [null as number | null, [Validators.required, Validators.min(0)]],
     disbursementType: ['', Validators.required],
     applierMinAge: [18, [Validators.required, Validators.min(18), Validators.max(100)]],
@@ -46,18 +50,21 @@ export class CreateLoanSchemeComponent implements OnInit {
     minTenureForRepayment: [1, [Validators.required, Validators.min(1)]],
     maxTenureForRepayment: [1, [Validators.required, Validators.min(1)]],
     prepaymentAllowed: [false, Validators.required],
-    foreclosureCharges: [0 as number | null, [Validators.min(0)]],
+    foreclosureCharges: [null as number | null, [Validators.min(0)]],
     coursePeriodIncluded: [false, Validators.required],
-    additionalMonths: [0, [Validators.required, Validators.min(0), Validators.max(120)]]
+    additionalMonths: [0, [Validators.required, Validators.min(0), Validators.max(120)]],
+    status: ['ACTIVE', Validators.required]
   });
 
   private readonly stepControls = [
     ['schemeName', 'effectiveFrom', 'effectiveTo', 'minLoanAmount', 'maxLoanAmount', 'interestType', 'minInterestRate', 'maxInterestRate', 'disbursementType'],
     ['applierMinAge', 'applierMaxAge', 'coBorrowerRequired', 'minCreditScore', 'requiredDocumentIds', 'eligibleProfessionIds'],
-    ['minTenureForRepayment', 'maxTenureForRepayment', 'prepaymentAllowed', 'foreclosureCharges', 'coursePeriodIncluded', 'additionalMonths']
+    ['minTenureForRepayment', 'maxTenureForRepayment', 'prepaymentAllowed', 'foreclosureCharges', 'coursePeriodIncluded', 'additionalMonths', 'status']
   ];
 
   constructor(private catalog: SchemeCatalogService, private schemes: LoanSchemeService, private router: Router) {}
+
+  get isEditMode(): boolean { return !!this.loanSchemeId; }
 
   private localDate(date: Date): string {
     const month = `${date.getMonth() + 1}`.padStart(2, '0');
@@ -66,10 +73,81 @@ export class CreateLoanSchemeComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.loanSchemeId = this.route.snapshot.paramMap.get('loanSchemeId')?.trim() ?? '';
+    this.form.controls.coBorrowerRequired.valueChanges.subscribe(required => {
+      this.setConditionalRequired('minCreditScore', required === true, [Validators.min(300), Validators.max(900)]);
+    });
+    this.form.controls.prepaymentAllowed.valueChanges.subscribe(allowed => {
+      this.setConditionalRequired('foreclosureCharges', allowed === true, [Validators.min(0)]);
+    });
     forkJoin({ documents: this.catalog.getDocuments(), professions: this.catalog.getProfessions() }).subscribe({
-      next: options => { this.documents = options.documents; this.professions = options.professions; this.loadingOptions = false; },
+      next: options => {
+        this.documents = options.documents;
+        this.professions = options.professions;
+        if (this.isEditMode) this.loadLoanSchemeForEdit();
+        else this.loadingOptions = false;
+      },
       error: () => { this.loadingOptions = false; this.loadError = 'Could not load document and profession options. Please refresh and try again.'; }
     });
+  }
+
+  private loadLoanSchemeForEdit(): void {
+    this.schemes.getLoanSchemeById(this.loanSchemeId).subscribe({
+      next: scheme => {
+        const requiredDocumentIds = this.documents
+          .filter(option => scheme.requiredDocumentIds.includes(option.name))
+          .map(option => option.documentTypeId);
+        const eligibleProfessionIds = this.professions
+          .filter(option => scheme.eligibleProfessionIds.includes(option.name))
+          .map(option => option.id);
+        if (requiredDocumentIds.length !== scheme.requiredDocumentIds.length ||
+            eligibleProfessionIds.length !== scheme.eligibleProfessionIds.length) {
+          this.loadError = 'Some saved documents or professions are no longer available. Update options before editing this scheme.';
+          this.loadingOptions = false;
+          return;
+        }
+
+        this.form.patchValue({
+          schemeName: scheme.schemeName,
+          effectiveFrom: scheme.effectiveFrom,
+          effectiveTo: scheme.effectiveTo,
+          minLoanAmount: scheme.minAmount,
+          maxLoanAmount: scheme.maxAmount,
+          interestType: scheme.interestType,
+          minInterestRate: scheme.minInterestRate ?? scheme.maxInterestRate,
+          maxInterestRate: scheme.maxInterestRate,
+          disbursementType: scheme.disbursementType,
+          applierMinAge: scheme.applierMinAge,
+          applierMaxAge: scheme.applierMaxAge,
+          coBorrowerRequired: scheme.coBorrowerRequired,
+          minCreditScore: scheme.minCreditScore,
+          requiredDocumentIds,
+          eligibleProfessionIds,
+          minTenureForRepayment: scheme.minTenureForRepayment,
+          maxTenureForRepayment: scheme.maxTenureForRepayment,
+          prepaymentAllowed: scheme.prepaymentAllowed,
+          foreclosureCharges: scheme.foreclosureCharges,
+          coursePeriodIncluded: scheme.coursePeriodIncluded,
+          additionalMonths: scheme.additionalMonths,
+          status: scheme.status
+        });
+        this.loadingOptions = false;
+      },
+      error: error => {
+        this.loadingOptions = false;
+        this.loadError = error?.error?.message ?? 'Could not load this loan scheme for editing.';
+      }
+    });
+  }
+
+  private setConditionalRequired(
+    name: 'minCreditScore' | 'foreclosureCharges',
+    required: boolean,
+    validators: ValidatorFn[]
+  ): void {
+    const control = this.form.get(name);
+    control?.setValidators(required ? [Validators.required, ...validators] : validators);
+    control?.updateValueAndValidity({ emitEvent: false });
   }
 
   next(): void {
@@ -92,7 +170,7 @@ export class CreateLoanSchemeComponent implements OnInit {
     if (this.step === 0 && value.effectiveFrom && value.effectiveTo && value.effectiveTo < value.effectiveFrom) {
       this.form.get('effectiveTo')?.setErrors({ dateOrder: true }); valid = false;
     }
-    if (this.step === 0 && value.effectiveFrom && value.effectiveFrom < this.minDate) {
+    if (this.step === 0 && !this.isEditMode && value.effectiveFrom && value.effectiveFrom < this.minDate) {
       this.form.get('effectiveFrom')?.setErrors({ pastDate: true }); valid = false;
     }
     if (this.step === 0 && value.effectiveTo && value.effectiveTo < this.minDate) {
@@ -121,7 +199,16 @@ export class CreateLoanSchemeComponent implements OnInit {
     }
     this.step = lastStep;
     this.submitting = true; this.submitError = '';
-    this.schemes.createLoanScheme(this.form.getRawValue() as unknown as Record<string, unknown>).subscribe({
+    const request = this.form.getRawValue() as unknown as Record<string, unknown>;
+    if (this.isEditMode) {
+      this.schemes.updateLoanScheme(this.loanSchemeId, request).subscribe({
+        next: () => { this.submitting = false; void this.router.navigate(['/loan-schemes', this.loanSchemeId]); },
+        error: error => { this.submitting = false; this.submitError = error?.error?.message || 'Unable to update the loan scheme. Check the details and try again.'; }
+      });
+      return;
+    }
+    delete request['status'];
+    this.schemes.createLoanScheme(request).subscribe({
       next: () => { this.submitting = false; void this.router.navigate(['/loan-schemes-created-by-me']); },
       error: error => { this.submitting = false; this.submitError = error?.error?.message || 'Unable to create the loan scheme. Check the details and try again.'; }
     });

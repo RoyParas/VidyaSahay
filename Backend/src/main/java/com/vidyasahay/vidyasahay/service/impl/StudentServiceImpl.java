@@ -2,12 +2,14 @@ package com.vidyasahay.vidyasahay.service.impl;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.vidyasahay.vidyasahay.dto.request.CompleteStudentProfileRequest;
+import com.vidyasahay.vidyasahay.dto.request.UpdateMyStudentProfileRequest;
 import com.vidyasahay.vidyasahay.dto.response.AddressResponse;
 import com.vidyasahay.vidyasahay.dto.response.CategoryResponse;
 import com.vidyasahay.vidyasahay.dto.response.CourseSummaryResponse;
@@ -22,6 +24,7 @@ import com.vidyasahay.vidyasahay.entity.Student;
 import com.vidyasahay.vidyasahay.entity.StudentVerification;
 import com.vidyasahay.vidyasahay.entity.User;
 import com.vidyasahay.vidyasahay.enums.VerificationStatus;
+import com.vidyasahay.vidyasahay.enums.RoleName;
 import com.vidyasahay.vidyasahay.exception.BusinessException;
 import com.vidyasahay.vidyasahay.exception.ResourceNotFoundException;
 import com.vidyasahay.vidyasahay.repository.AddressRepository;
@@ -64,17 +67,13 @@ public class StudentServiceImpl implements StudentService {
         @Override
         @Transactional(readOnly = true)
         public List<StudentSummaryResponse> getAllStudents() {
-
-                List<Student> students = studentRepository.findAllBy();
+                List<StudentSummaryResponse> students = studentRepository.findAllRegisteredStudents(RoleName.STUDENT);
 
                 if (students.isEmpty()) {
                         throw new ResourceNotFoundException(
                                         "No students found");
                 }
-
-                return students.stream()
-                                .map(this::mapToSummaryResponse)
-                                .toList();
+                return students;
         }
 
         @Override
@@ -107,6 +106,21 @@ public class StudentServiceImpl implements StudentService {
                 return mapToDetailedResponse(
                                 student,
                                 verificationStatus);
+        }
+
+        @Override
+        @Transactional(readOnly = true)
+        public StudentDetailedResponse getStudentByUserId(UUID userId) {
+                Student student = studentRepository.findByUserId(userId)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Student profile not found for the authenticated user"));
+
+                VerificationStatus verificationStatus = studentVerificationRepository
+                                .findByStudentId(student.getId())
+                                .map(StudentVerification::getStatus)
+                                .orElse(VerificationStatus.PENDING);
+
+                return mapToDetailedResponse(student, verificationStatus);
         }
 
         @Override
@@ -201,17 +215,93 @@ public class StudentServiceImpl implements StudentService {
 
                 verification.setStudent(savedStudent);
                 verification.setInstitute(institute);
-                verification.setStatus(
-                                VerificationStatus.PENDING);
+                verification.setStatus(VerificationStatus.PENDING);
                 verification.setRemark(null);
                 verification.setVerifiedBy(null);
                 verification.setVerifiedAt(null);
 
                 studentVerificationRepository.save(verification);
+
+                user.setProfileCompleted(true);
+                userRepository.save(user);
         }
 
-        private StudentSummaryResponse mapToSummaryResponse(
-                        Student student) {
+        @Override
+        @Transactional
+        public StudentDetailedResponse updateMyProfile(
+                        UUID userId,
+                        UpdateMyStudentProfileRequest request) {
+                Student student = studentRepository.findByUserId(userId)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Student profile not found for the authenticated user"));
+
+                Institute institute = instituteRepository.findById(request.instituteId())
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Institute not found with ID: " + request.instituteId()));
+                Course course = courseRepository.findOneById(request.courseId())
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Course not found with ID: " + request.courseId()));
+                if (course.getInstitute() == null || !course.getInstitute().getId().equals(institute.getId())) {
+                        throw new BusinessException("Selected course does not belong to the selected institute");
+                }
+                Category category = categoryRepository.findById(request.categoryId())
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Category not found with ID: " + request.categoryId()));
+                Address address = addressRepository.findById(request.addressId())
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Address not found with ID: " + request.addressId()));
+
+                boolean instituteChanged = student.getInstitute() == null
+                                || !student.getInstitute().getId().equals(institute.getId());
+                student.setInstitute(institute);
+                student.setCourse(course);
+                student.setCategory(category);
+                student.setAddress(address);
+                student.setLocation(trimToNull(request.location()));
+                student.setPincode(request.pincode());
+                student.setGender(request.gender());
+                student.setDateOfBirth(request.dateOfBirth());
+                student.setFatherName(request.fatherName().trim());
+                student.setMotherName(request.motherName().trim());
+                student.setAnnualFamilyIncome(request.annualFamilyIncome());
+
+                String aadharNumber = trimToNull(request.aadharNumber());
+                if (aadharNumber != null && !aadharNumber.equals(student.getAadharNumber())) {
+                        if (studentRepository.existsByAadharNumberAndIdNot(aadharNumber, student.getId())) {
+                                throw new BusinessException(
+                                                "A student profile already exists with this Aadhaar number");
+                        }
+                        student.setAadharNumber(aadharNumber);
+                }
+
+                Student savedStudent = studentRepository.save(student);
+                StudentVerification verification = studentVerificationRepository.findByStudentId(savedStudent.getId())
+                                .orElseGet(() -> {
+                                        StudentVerification created = new StudentVerification();
+                                        created.setStudent(savedStudent);
+                                        created.setStatus(VerificationStatus.PENDING);
+                                        return created;
+                                });
+                if (instituteChanged || verification.getInstitute() == null) {
+                        verification.setInstitute(institute);
+                        verification.setStatus(VerificationStatus.PENDING);
+                        verification.setRemark(null);
+                        verification.setVerifiedBy(null);
+                        verification.setVerifiedAt(null);
+                }
+                studentVerificationRepository.save(verification);
+
+                return mapToDetailedResponse(savedStudent, verification.getStatus());
+        }
+
+        private String trimToNull(String value) {
+                if (value == null || value.isBlank()) {
+                        return null;
+                }
+                return value.trim();
+        }
+
+        private StudentSummaryResponse mapToSummaryResponse(Student student) {
                 User user = student.getUser();
 
                 String instituteName = student.getInstitute() != null
@@ -222,15 +312,20 @@ public class StudentServiceImpl implements StudentService {
                                 ? student.getCourse().getName()
                                 : null;
 
+                Optional<StudentVerification> studentVerification = studentVerificationRepository.findByStudentId(student.getId());
+                VerificationStatus verificationStatus = studentVerification.map(StudentVerification::getStatus).orElse(null);
+
                 return new StudentSummaryResponse(
                                 student.getId(),
                                 user.getFirstName(),
                                 user.getLastName(),
                                 user.getEmail(),
                                 user.getMobile(),
-                                maskAadhar(student.getAadharNumber()),
+                                verificationStatus,
                                 courseName,
-                                instituteName);
+                                instituteName,
+                                user.getId(),
+                                user.isProfileCompleted());
         }
 
         private StudentDetailedResponse mapToDetailedResponse(
@@ -246,8 +341,11 @@ public class StudentServiceImpl implements StudentService {
                                 user.getEmail(),
                                 user.getMobile(),
                                 student.getInstitute().getName(),
+                                student.getInstitute().getId(),
                                 student.getCourse().getName(),
+                                student.getCourse().getId(),
                                 student.getCategory().getCode(),
+                                student.getCategory().getId(),
                                 mapAddress(student.getAddress()),
                                 student.getLocation(),
                                 student.getPincode(),
@@ -260,7 +358,7 @@ public class StudentServiceImpl implements StudentService {
                                 student.getFeesPending(),
                                 student.getAnnualFamilyIncome(),
                                 verificationStatus,
-                                true,
+                                user.isProfileCompleted(),
                                 student.getCreatedAt(),
                                 student.getUpdatedAt());
         }

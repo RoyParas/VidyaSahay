@@ -50,5 +50,25 @@ public record UpdateInstituteRequest(
         String ifscCode,
 
         @Pattern(regexp = "^$|^[0-9]{9,18}$", message = "Account number is not valid")
-        String accountNumber
-) {}
+        String accountNumber,
+
+        @NotNull(message = "Status is required")
+        Boolean status
+) {
+    public UpdateInstituteRequest(
+            String firstName,
+            String lastName,
+            String mobile,
+            String email,
+            String instituteName,
+            UUID addressId,
+            String location,
+            Integer pincode,
+            String bankName,
+            String branchName,
+            String ifscCode,
+            String accountNumber) {
+        this(firstName, lastName, mobile, email, instituteName, addressId, location,
+                pincode, bankName, branchName, ifscCode, accountNumber, null);
+    }
+}

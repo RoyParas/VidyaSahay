@@ -22,7 +22,7 @@ public class CategoryController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('GOVERNMENT')")
+    @PreAuthorize("hasAnyRole('GOVERNMENT', 'STUDENT')")
     public ResponseEntity<List<CategoryResponse>> getAllCategories() {
         List<CategoryResponse> response = categoryRepository.findAll().stream()
                 .sorted(java.util.Comparator.comparing(category -> category.getCode().toLowerCase()))

@@ -1,0 +1,99 @@
+<main class="profile-setup-page">
+  <section class="profile-setup-card">
+    <p class="eyebrow">Student account setup</p>
+    <h1>{{ editMode ? 'Update your profile' : 'Complete your profile' }}</h1>
+    <p class="intro">{{ editMode ? 'Keep your academic, personal, and address details up to date.' : 'Add your academic, personal, and address details to continue using VidyaSahay.' }}</p>
+    <div class="loading" *ngIf="loading">Loading profile options...</div>
+
+    <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <h2>Academic details</h2>
+      <div class="form-grid">
+        <label for="instituteId">Institute
+          <select id="instituteId" formControlName="instituteId" (change)="onInstituteChange($any($event.target).value)" [attr.aria-invalid]="isInvalid('instituteId')" aria-describedby="institute-error">
+            <option value="">Select institute</option>
+            <option *ngFor="let institute of institutes" [value]="institute.instituteId">{{ institute.instituteName }}</option>
+          </select>
+          <small id="institute-error" class="field-error" *ngIf="isInvalid('instituteId')">{{ fieldError('instituteId') }}</small>
+        </label>
+        <label for="courseId">Course
+          <select id="courseId" formControlName="courseId" [attr.aria-invalid]="isInvalid('courseId')" aria-describedby="course-error">
+            <option value="">Select course</option>
+            <option *ngFor="let course of courses" [value]="course.id">{{ course.name }}</option>
+          </select>
+          <small id="course-error" class="field-error" *ngIf="isInvalid('courseId')">{{ fieldError('courseId') }}</small>
+        </label>
+        <label for="categoryId">Category
+          <select id="categoryId" formControlName="categoryId" [attr.aria-invalid]="isInvalid('categoryId')" aria-describedby="category-error">
+            <option value="">Select category</option>
+            <option *ngFor="let category of categories" [value]="category.id">{{ category.code }}</option>
+          </select>
+          <small id="category-error" class="field-error" *ngIf="isInvalid('categoryId')">{{ fieldError('categoryId') }}</small>
+        </label>
+      </div>
+
+      <h2>Personal details</h2>
+      <div class="form-grid">
+        <label for="gender">Gender
+          <select id="gender" formControlName="gender" [attr.aria-invalid]="isInvalid('gender')" aria-describedby="gender-error">
+            <option value="">Select gender</option><option value="MALE">Male</option><option value="FEMALE">Female</option><option value="OTHER">Other</option><option value="PREFER_NOT_TO_SAY">Prefer not to say</option>
+          </select>
+          <small id="gender-error" class="field-error" *ngIf="isInvalid('gender')">{{ fieldError('gender') }}</small>
+        </label>
+        <label for="dateOfBirth">Date of birth
+          <input id="dateOfBirth" type="date" [max]="lastValidDateOfBirth" formControlName="dateOfBirth" [attr.aria-invalid]="isInvalid('dateOfBirth')" aria-describedby="dob-error">
+          <small id="dob-error" class="field-error" *ngIf="isInvalid('dateOfBirth')">{{ fieldError('dateOfBirth') }}</small>
+        </label>
+        <label for="aadharNumber">Aadhaar number
+          <input id="aadharNumber" inputmode="numeric" maxlength="12" formControlName="aadharNumber" [attr.aria-invalid]="isInvalid('aadharNumber')" aria-describedby="aadhaar-error">
+          <small *ngIf="editMode" class="field-hint">Leave blank to keep your current Aadhaar number.</small>
+          <small id="aadhaar-error" class="field-error" *ngIf="isInvalid('aadharNumber')">{{ fieldError('aadharNumber') }}</small>
+        </label>
+        <label for="fatherName">Father's name
+          <input id="fatherName" maxlength="150" formControlName="fatherName" autocomplete="off" [attr.aria-invalid]="isInvalid('fatherName')" aria-describedby="father-error">
+          <small id="father-error" class="field-error" *ngIf="isInvalid('fatherName')">{{ fieldError('fatherName') }}</small>
+        </label>
+        <label for="motherName">Mother's name
+          <input id="motherName" maxlength="150" formControlName="motherName" autocomplete="off" [attr.aria-invalid]="isInvalid('motherName')" aria-describedby="mother-error">
+          <small id="mother-error" class="field-error" *ngIf="isInvalid('motherName')">{{ fieldError('motherName') }}</small>
+        </label>
+        <label for="annualFamilyIncome">Annual family income (₹)
+          <input id="annualFamilyIncome" type="number" min="0" step="0.01" formControlName="annualFamilyIncome" [attr.aria-invalid]="isInvalid('annualFamilyIncome')" aria-describedby="income-error">
+          <small id="income-error" class="field-error" *ngIf="isInvalid('annualFamilyIncome')">{{ fieldError('annualFamilyIncome') }}</small>
+        </label>
+      </div>
+
+      <h2>Address</h2>
+      <div class="form-grid">
+        <label for="state">State
+          <select id="state" formControlName="state" (change)="onStateChange($any($event.target).value)" [attr.aria-invalid]="isInvalid('state')" aria-describedby="state-error">
+            <option value="">Select state</option><option *ngFor="let state of states" [value]="state">{{ state }}</option>
+          </select>
+          <small id="state-error" class="field-error" *ngIf="isInvalid('state')">{{ fieldError('state') }}</small>
+        </label>
+        <label for="district">District
+          <select id="district" formControlName="district" (change)="onDistrictChange($any($event.target).value)" [attr.aria-invalid]="isInvalid('district')" aria-describedby="district-error">
+            <option value="">Select district</option><option *ngFor="let district of districts" [value]="district">{{ district }}</option>
+          </select>
+          <small id="district-error" class="field-error" *ngIf="isInvalid('district')">{{ fieldError('district') }}</small>
+        </label>
+        <label for="addressId">City
+          <select id="addressId" formControlName="addressId" [attr.aria-invalid]="isInvalid('addressId')" aria-describedby="city-error">
+            <option value="">Select city</option><option *ngFor="let city of cities" [value]="city.addressId">{{ city.city }}</option>
+          </select>
+          <small id="city-error" class="field-error" *ngIf="isInvalid('addressId')">{{ fieldError('addressId') }}</small>
+        </label>
+        <label for="location">Area / street (optional)
+          <input id="location" maxlength="255" formControlName="location" [attr.aria-invalid]="isInvalid('location')" aria-describedby="location-error">
+          <small id="location-error" class="field-error" *ngIf="isInvalid('location')">{{ fieldError('location') }}</small>
+        </label>
+        <label for="pincode">PIN code
+          <input id="pincode" inputmode="numeric" maxlength="6" formControlName="pincode" [attr.aria-invalid]="isInvalid('pincode')" aria-describedby="pincode-error">
+          <small id="pincode-error" class="field-error" *ngIf="isInvalid('pincode')">{{ fieldError('pincode') }}</small>
+        </label>
+      </div>
+
+      <p class="form-error" *ngIf="submitted && (form.invalid || hasMissingRequiredFields)">Review the highlighted fields before saving.</p>
+      <button type="submit" [disabled]="submitting || loadingOptions || (editMode && !hasChanges)">{{ submitting ? (editMode ? 'Updating profile...' : 'Saving profile...') : loadingOptions ? 'Loading selections...' : (editMode ? 'Update profile' : 'Save and continue') }}</button>
+    </form>
+  </section>
+</main>

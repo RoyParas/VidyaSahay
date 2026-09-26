@@ -11,6 +11,7 @@ import com.vidyasahay.vidyasahay.dto.response.loanScheme.LoanSchemeSummaryRespon
 
 public interface LoanSchemeService {	
 	List<LoanSchemeSummaryResponseDTO> getAllLoanSchemes();
+	List<LoanSchemeSummaryResponseDTO> getActiveLoanSchemes();
 	LoanSchemeDetailedResponseDTO getLoanSchemeById(UUID loanSchemeId);
 	List<LoanSchemeSummaryResponseDTO> getEligibleLoanSchemes(LoanEligibilityRequestDTO request);
 	List<LoanSchemeSummaryResponseDTO> getLoanSchemesCreatedByMe();

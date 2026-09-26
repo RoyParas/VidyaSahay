@@ -4,6 +4,8 @@ import com.vidyasahay.vidyasahay.dto.request.ApplicationActionRequest;
 import com.vidyasahay.vidyasahay.dto.request.ApplyApplicationRequest;
 import com.vidyasahay.vidyasahay.dto.response.AddressResponse;
 import com.vidyasahay.vidyasahay.dto.response.ApplicationDetailResponse;
+import com.vidyasahay.vidyasahay.dto.response.ApplicationSubmissionDetails;
+import com.vidyasahay.vidyasahay.dto.response.ApplicationHistoryResponse;
 import com.vidyasahay.vidyasahay.dto.response.ApplicationSummaryResponse;
 import com.vidyasahay.vidyasahay.dto.response.StudentDetailedResponse;
 import com.vidyasahay.vidyasahay.dto.response.StudentDocumentResponse;
@@ -12,13 +14,18 @@ import com.vidyasahay.vidyasahay.entity.ApplicationDocument;
 import com.vidyasahay.vidyasahay.entity.ApplicationHistory;
 import com.vidyasahay.vidyasahay.entity.DocumentType;
 import com.vidyasahay.vidyasahay.entity.LoanScheme;
+import com.vidyasahay.vidyasahay.entity.LoanSchemeEligibility;
+import com.vidyasahay.vidyasahay.entity.LoanSchemeRepaymentRule;
 import com.vidyasahay.vidyasahay.entity.ScholarshipScheme;
+import com.vidyasahay.vidyasahay.entity.ScholarshipSchemeEligibility;
 import com.vidyasahay.vidyasahay.entity.Student;
 import com.vidyasahay.vidyasahay.entity.StudentDocument;
 import com.vidyasahay.vidyasahay.entity.StudentVerification;
 import com.vidyasahay.vidyasahay.entity.User;
 import com.vidyasahay.vidyasahay.enums.ApplicationStatus;
 import com.vidyasahay.vidyasahay.enums.ApplicationType;
+import com.vidyasahay.vidyasahay.enums.SchemeStatus;
+import com.vidyasahay.vidyasahay.enums.ScholarshipType;
 import com.vidyasahay.vidyasahay.enums.VerificationStatus;
 import com.vidyasahay.vidyasahay.repository.ApplicationDocumentRepository;
 import com.vidyasahay.vidyasahay.repository.ApplicationHistoryRepository;
@@ -33,18 +40,26 @@ import com.vidyasahay.vidyasahay.repository.scholarshipScheme.ScholarshipSchemeR
 import com.vidyasahay.vidyasahay.service.ApplicationService;
 import com.vidyasahay.vidyasahay.service.CustomUserPrincipal;
 import com.vidyasahay.vidyasahay.service.FileStorageService;
+import com.vidyasahay.vidyasahay.exception.BusinessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.Period;
+import java.util.HashSet;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
 public class ApplicationServiceImpl implements ApplicationService {
+
+    private static final long MAX_APPLICATION_DOCUMENT_SIZE = 5L * 1024 * 1024;
 
     private final ApplicationRepository applicationRepository;
     private final ApplicationDocumentRepository applicationDocumentRepository;
@@ -95,6 +110,19 @@ public class ApplicationServiceImpl implements ApplicationService {
                         new RuntimeException("Application not found")
                 );
 
+        return createApplicationDetailResponse(application);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ApplicationDetailResponse getApplicationById(UUID applicationId, CustomUserPrincipal principal) {
+        Application application = applicationRepository.findApplicationById(applicationId)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
+        if (principal.getRole() == com.vidyasahay.vidyasahay.enums.RoleName.STUDENT
+                && !application.getStudent().getUser().getId().equals(principal.getUserId())) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "You are not allowed to view this application");
+        }
         return createApplicationDetailResponse(application);
     }
 
@@ -156,6 +184,14 @@ public class ApplicationServiceImpl implements ApplicationService {
                         )
                 );
 
+        VerificationStatus studentVerificationStatus = studentVerificationRepository
+                .findByStudentId(student.getId())
+                .map(StudentVerification::getStatus)
+                .orElse(VerificationStatus.PENDING);
+        if (studentVerificationStatus != VerificationStatus.VERIFIED) {
+            throw new BusinessException("Your institute must verify your profile before you can apply");
+        }
+
         if (request.applicationType() == null ||
                 request.applicationType().isBlank()) {
             throw new RuntimeException(
@@ -184,11 +220,6 @@ public class ApplicationServiceImpl implements ApplicationService {
             );
         }
 
-        validateUploadedDocuments(
-                request.documents(),
-                request.documentTypeIds()
-        );
-
         Application application = new Application();
 
         application.setStudent(student);
@@ -206,8 +237,17 @@ public class ApplicationServiceImpl implements ApplicationService {
                             )
                     );
 
+            validateLoanApplication(student, loanScheme, request);
+            validateUploadedDocuments(request.documents(), request.documentTypeIds(),
+                    loanSchemeRepository.findRequiredDocumentTypeIds(loanScheme.getId()));
+
             application.setLoanScheme(loanScheme);
             application.setScholarshipScheme(null);
+            application.setRequestedLoanAmount(request.requestedLoanAmount());
+            application.setLoanPurpose(request.loanPurpose().trim());
+            application.setRepaymentTenureYears(request.repaymentTenureYears());
+            application.setCoBorrowerName(trimToNull(request.coBorrowerName()));
+            application.setCoBorrowerIncome(request.coBorrowerIncome());
         }
 
         if (applicationType == ApplicationType.SCHOLARSHIP) {
@@ -218,12 +258,17 @@ public class ApplicationServiceImpl implements ApplicationService {
                                     new RuntimeException(
                                             "Scholarship scheme not found"
                                     )
-                            );
+                    );
+
+            validateScholarshipApplication(student, scholarshipScheme, request);
+            validateUploadedDocuments(request.documents(), request.documentTypeIds(),
+                    scholarshipSchemeRepository.findRequiredDocumentTypeIds(scholarshipScheme.getId()));
 
             application.setScholarshipScheme(
                     scholarshipScheme
             );
             application.setLoanScheme(null);
+            application.setAcademicPercentage(request.academicPercentage());
         }
 
         Application savedApplication =
@@ -286,6 +331,19 @@ public class ApplicationServiceImpl implements ApplicationService {
             );
         }
 
+        if (status != ApplicationStatus.APPROVED
+                && status != ApplicationStatus.REJECTED
+                && status != ApplicationStatus.REVERTED) {
+            throw new BusinessException("Application decision must be APPROVED, REJECTED, or REVERTED");
+        }
+        if (application.getStatus() != ApplicationStatus.SUBMITTED
+                && application.getStatus() != ApplicationStatus.UNDER_REVIEW) {
+            throw new BusinessException("Only submitted or under-review applications can receive a decision");
+        }
+        if (request.remark() == null || request.remark().isBlank() || request.remark().trim().length() > 1000) {
+            throw new BusinessException("A decision remark is required and must not exceed 1000 characters");
+        }
+
         application.setStatus(status);
 
         if (request.approvedAmount() != null) {
@@ -311,26 +369,210 @@ public class ApplicationServiceImpl implements ApplicationService {
         );
     }
 
+    @Override
+    @Transactional
+    public ApplicationDetailResponse resubmit(UUID applicationId, ApplyApplicationRequest request,
+            CustomUserPrincipal principal) {
+        Application application = applicationRepository.findApplicationById(applicationId)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
+        if (!application.getStudent().getUser().getId().equals(principal.getUserId())) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "You are not allowed to resubmit this application");
+        }
+        if (application.getStatus() != ApplicationStatus.REVERTED) {
+            throw new BusinessException("Only reverted applications can be resubmitted");
+        }
+        if (request.applicationType() == null
+                || !application.getApplicationType().name().equalsIgnoreCase(request.applicationType())
+                || request.schemeId() == null
+                || !request.schemeId().equals(application.getApplicationType() == ApplicationType.LOAN
+                        ? application.getLoanScheme().getId()
+                        : application.getScholarshipScheme().getId())) {
+            throw new BusinessException("The resubmitted application must use its original scheme and type");
+        }
+
+        Student student = application.getStudent();
+        VerificationStatus verificationStatus = studentVerificationRepository.findByStudentId(student.getId())
+                .map(StudentVerification::getStatus).orElse(VerificationStatus.PENDING);
+        if (verificationStatus != VerificationStatus.VERIFIED) {
+            throw new BusinessException("Your institute must verify your profile before you can resubmit");
+        }
+
+        List<UUID> requiredDocumentTypeIds;
+        if (application.getApplicationType() == ApplicationType.LOAN) {
+            LoanScheme scheme = application.getLoanScheme();
+            validateLoanApplication(student, scheme, request);
+            requiredDocumentTypeIds = loanSchemeRepository.findRequiredDocumentTypeIds(scheme.getId());
+        } else {
+            ScholarshipScheme scheme = application.getScholarshipScheme();
+            validateScholarshipApplication(student, scheme, request);
+            requiredDocumentTypeIds = scholarshipSchemeRepository.findRequiredDocumentTypeIds(scheme.getId());
+        }
+        validateUploadedDocuments(request.documents(), request.documentTypeIds(), requiredDocumentTypeIds);
+
+        applicationDocumentRepository.deleteAllByApplicationId(applicationId);
+        if (application.getApplicationType() == ApplicationType.LOAN) {
+            application.setRequestedLoanAmount(request.requestedLoanAmount());
+            application.setLoanPurpose(request.loanPurpose().trim());
+            application.setRepaymentTenureYears(request.repaymentTenureYears());
+            application.setCoBorrowerName(trimToNull(request.coBorrowerName()));
+            application.setCoBorrowerIncome(request.coBorrowerIncome());
+        } else {
+            application.setAcademicPercentage(request.academicPercentage());
+        }
+        application.setStatus(ApplicationStatus.SUBMITTED);
+        application.setSubmittedAt(LocalDateTime.now());
+        Application savedApplication = applicationRepository.save(application);
+        saveOrReuseApplicationDocuments(savedApplication, student, request.documents(), request.documentTypeIds());
+        createApplicationHistory(savedApplication, principal, ApplicationStatus.SUBMITTED,
+                "Application resubmitted with requested documents");
+        return createApplicationDetailResponse(savedApplication);
+    }
+
+    private void validateLoanApplication(Student student, LoanScheme scheme, ApplyApplicationRequest request) {
+        ensureSchemeCurrentlyActive(scheme.getStatus(), scheme.getEffectiveFrom(), scheme.getEffectiveTo());
+        if (request.requestedLoanAmount() == null || request.requestedLoanAmount().signum() <= 0
+                || (scheme.getMinLoanAmount() != null && request.requestedLoanAmount().compareTo(scheme.getMinLoanAmount()) < 0)
+                || request.requestedLoanAmount().compareTo(scheme.getMaxLoanAmount()) > 0) {
+            throw new BusinessException("Requested loan amount is outside this scheme's allowed range");
+        }
+        if (request.loanPurpose() == null || request.loanPurpose().isBlank() || request.loanPurpose().length() > 500) {
+            throw new BusinessException("Loan purpose is required and must not exceed 500 characters");
+        }
+        LoanSchemeRepaymentRule repayment = loanSchemeRepository.findRepaymentRuleBySchemeId(scheme.getId())
+                .orElseThrow(() -> new BusinessException("Loan repayment rules are not configured"));
+        if (request.repaymentTenureYears() == null
+                || request.repaymentTenureYears() < repayment.getMinTenureYears()
+                || request.repaymentTenureYears() > repayment.getMaxTenureYears()) {
+            throw new BusinessException("Repayment tenure is outside this scheme's allowed range");
+        }
+        LoanSchemeEligibility eligibility = loanSchemeRepository.findEligibilityBySchemeId(scheme.getId())
+                .orElseThrow(() -> new BusinessException("Loan eligibility rules are not configured"));
+        validateStudentAge(student, eligibility.getMinAge(), eligibility.getMaxAge());
+        if (student.getCourse() == null || student.getCourse().getProfession() == null
+                || !loanSchemeRepository.findEligibleProfessionIds(scheme.getId())
+                        .contains(student.getCourse().getProfession().getId())) {
+            throw new BusinessException("Student's course is not eligible for this loan scheme");
+        }
+        if (eligibility.isCoBorrowerRequired()) {
+            if (request.coBorrowerName() == null || request.coBorrowerName().isBlank()
+                    || request.coBorrowerName().trim().length() > 150
+                    || request.coBorrowerIncome() == null || request.coBorrowerIncome().signum() < 0) {
+                throw new BusinessException("A co-borrower name and non-negative annual income are required");
+            }
+        } else if (request.coBorrowerIncome() != null && request.coBorrowerIncome().signum() < 0) {
+            throw new BusinessException("Co-borrower income cannot be negative");
+        }
+    }
+
+    private void validateScholarshipApplication(Student student, ScholarshipScheme scheme, ApplyApplicationRequest request) {
+        ensureSchemeCurrentlyActive(scheme.getStatus(), scheme.getStartDate(), scheme.getEndDate());
+        if (request.academicPercentage() == null || request.academicPercentage().signum() < 0
+                || request.academicPercentage().compareTo(BigDecimal.valueOf(100)) > 0) {
+            throw new BusinessException("Academic percentage must be between 0 and 100");
+        }
+        ScholarshipSchemeEligibility eligibility = scholarshipSchemeRepository.findEligibilityBySchemeId(scheme.getId())
+                .orElseThrow(() -> new BusinessException("Scholarship eligibility rules are not configured"));
+        validateStudentAge(student, eligibility.getMinimumAge(), eligibility.getMaximumAge());
+        if (student.getAnnualFamilyIncome() == null
+                || (eligibility.getMaximumAnnualFamilyIncome() != null
+                    && student.getAnnualFamilyIncome().compareTo(eligibility.getMaximumAnnualFamilyIncome()) > 0)
+                || (eligibility.getMinimumPercentageCriteria() != null
+                    && request.academicPercentage().compareTo(eligibility.getMinimumPercentageCriteria()) < 0)) {
+            throw new BusinessException("Student does not meet this scholarship's financial or academic criteria");
+        }
+        if (student.getCourse() == null || student.getCourse().getProfession() == null
+                || !scholarshipSchemeRepository.findEligibleProfessionIds(scheme.getId())
+                        .contains(student.getCourse().getProfession().getId())) {
+            throw new BusinessException("Student's course is not eligible for this scholarship");
+        }
+        if (scheme.getScholarshipType() == ScholarshipType.CATEGORY_BASED
+                && (student.getCategory() == null
+                    || !scholarshipSchemeRepository.findEligibleCategoryIds(scheme.getId())
+                            .contains(student.getCategory().getId()))) {
+            throw new BusinessException("Student's category is not eligible for this scholarship");
+        }
+    }
+
+    private void validateStudentAge(Student student, Integer minimumAge, Integer maximumAge) {
+        if (student.getDateOfBirth() == null) {
+            throw new BusinessException("Student date of birth is required to check eligibility");
+        }
+        int age = Period.between(student.getDateOfBirth(), LocalDate.now()).getYears();
+        if ((minimumAge != null && age < minimumAge) || (maximumAge != null && age > maximumAge)) {
+            throw new BusinessException("Student age is outside this scheme's allowed range");
+        }
+    }
+
+    private void ensureSchemeCurrentlyActive(SchemeStatus status, LocalDate startDate, LocalDate endDate) {
+        LocalDate today = LocalDate.now();
+        if (status != SchemeStatus.ACTIVE || startDate == null || endDate == null
+                || startDate.isAfter(today) || endDate.isBefore(today)) {
+            throw new BusinessException("This scheme is not currently accepting applications");
+        }
+    }
+
+    private String trimToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
+    }
+
     private void validateUploadedDocuments(
             MultipartFile[] documents,
-            UUID[] documentTypeIds
+            UUID[] documentTypeIds,
+            List<UUID> requiredDocumentTypeIds
     ) {
-        if (documents == null || documents.length == 0) {
+        if (requiredDocumentTypeIds == null) {
+            throw new BusinessException("Required documents are not configured for this scheme");
+        }
+        if (requiredDocumentTypeIds.isEmpty() && (documents == null || documents.length == 0)
+                && (documentTypeIds == null || documentTypeIds.length == 0)) {
             return;
         }
 
-        if (documentTypeIds == null ||
-                documentTypeIds.length == 0) {
-            throw new RuntimeException(
-                    "Document type IDs are required"
-            );
+        if (documents == null || documentTypeIds == null || documents.length != requiredDocumentTypeIds.size()
+                || documentTypeIds.length != documents.length) {
+            throw new BusinessException("Upload exactly one document for every document required by this scheme");
         }
+        Set<UUID> submittedDocumentTypes = new HashSet<>(Arrays.asList(documentTypeIds));
+        if (submittedDocumentTypes.size() != documentTypeIds.length
+                || !submittedDocumentTypes.equals(new HashSet<>(requiredDocumentTypeIds))) {
+            throw new BusinessException("Upload exactly one document for every document required by this scheme");
+        }
+        for (MultipartFile file : documents) {
+            validateDocumentFile(file);
+        }
+    }
 
-        if (documents.length != documentTypeIds.length) {
-            throw new RuntimeException(
-                    "Each uploaded document must have " +
-                    "one corresponding documentTypeId"
-            );
+    private void validateDocumentFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new BusinessException("Each required document must contain a file");
+        }
+        if (file.getSize() > MAX_APPLICATION_DOCUMENT_SIZE) {
+            throw new BusinessException("Each uploaded document must be 5 MB or smaller");
+        }
+        String contentType = file.getContentType();
+        String fileName = file.getOriginalFilename();
+        String extension = fileName == null || !fileName.contains(".")
+                ? "" : fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase(Locale.ROOT);
+        boolean signatureMatches = false;
+        try {
+            byte[] bytes = file.getBytes();
+            if ("application/pdf".equalsIgnoreCase(contentType) && "pdf".equals(extension)) {
+                signatureMatches = bytes.length >= 4 && bytes[0] == '%' && bytes[1] == 'P' && bytes[2] == 'D' && bytes[3] == 'F';
+            } else if ("image/jpeg".equalsIgnoreCase(contentType) && ("jpg".equals(extension) || "jpeg".equals(extension))) {
+                signatureMatches = bytes.length >= 3 && (bytes[0] & 0xff) == 0xff && (bytes[1] & 0xff) == 0xd8 && (bytes[2] & 0xff) == 0xff;
+            } else if ("image/png".equalsIgnoreCase(contentType) && "png".equals(extension)) {
+                byte[] pngSignature = {(byte) 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a};
+                signatureMatches = bytes.length >= pngSignature.length;
+                for (int index = 0; signatureMatches && index < pngSignature.length; index++) {
+                    signatureMatches = bytes[index] == pngSignature[index];
+                }
+            }
+        } catch (java.io.IOException exception) {
+            throw new BusinessException("Could not read an uploaded document");
+        }
+        if (!signatureMatches) {
+            throw new BusinessException("Allowed document types are PDF, JPG, JPEG, and PNG, with matching file content");
         }
     }
 
@@ -386,25 +628,6 @@ public class ApplicationServiceImpl implements ApplicationService {
             UUID documentTypeId,
             MultipartFile file
     ) {
-        StudentDocument existingDocument =
-                studentDocumentRepository
-                        .findFirstByStudent_IdAndDocumentType_IdOrderByCreatedAtDesc(
-                                student.getId(),
-                                documentTypeId
-                        )
-                        .orElse(null);
-
-        /*
-         * If both the database record and physical file exist,
-         * reuse the existing StudentDocument.
-         */
-        if (existingDocument != null &&
-                fileStorageService.exists(
-                        existingDocument.getFilePath()
-                )) {
-            return existingDocument;
-        }
-
         DocumentType documentType =
                 documentTypeRepository
                         .findById(documentTypeId)
@@ -422,36 +645,6 @@ public class ApplicationServiceImpl implements ApplicationService {
                 fileStorageService
                         .getCleanOriginalFileName(file);
 
-        /*
-         * StudentDocument exists in the database,
-         * but its physical file is missing.
-         * Update the existing record.
-         */
-        if (existingDocument != null) {
-            existingDocument.setDocumentType(
-                    documentType
-            );
-            existingDocument.setFileName(
-                    originalFileName
-            );
-            existingDocument.setFilePath(
-                    storedFilePath
-            );
-            existingDocument.setVerificationStatus(
-                    VerificationStatus.PENDING
-            );
-            existingDocument.setVerifiedBy(null);
-            existingDocument.setVerifiedAt(null);
-
-            return studentDocumentRepository.save(
-                    existingDocument
-            );
-        }
-
-        /*
-         * No StudentDocument exists for this student
-         * and document type, so create a new record.
-         */
         StudentDocument newStudentDocument =
                 new StudentDocument();
 
@@ -561,12 +754,41 @@ public class ApplicationServiceImpl implements ApplicationService {
                                 .getInstitute()
                                 .getName();
 
+        List<ApplicationHistoryResponse> history = applicationHistoryRepository
+                .findAllByApplicationIdOrderByCreatedAtDesc(application.getId())
+                .stream()
+                .map(entry -> new ApplicationHistoryResponse(
+                        entry.getId(),
+                        entry.getStatus(),
+                        entry.getRemark(),
+                        entry.getActionByUser().getId(),
+                        fullName(entry.getActionByUser()),
+                        entry.getAssignedToUser() == null ? null : entry.getAssignedToUser().getId(),
+                        entry.getAssignedToUser() == null ? null : fullName(entry.getAssignedToUser()),
+                        entry.getCreatedAt()))
+                .toList();
+
         return new ApplicationDetailResponse(
                 summary,
+                new ApplicationSubmissionDetails(
+                        application.getRequestedLoanAmount(),
+                        application.getAcademicPercentage(),
+                        application.getLoanPurpose(),
+                        application.getRepaymentTenureYears(),
+                        application.getCoBorrowerName(),
+                        application.getCoBorrowerIncome()),
                 studentResponse,
                 instituteName,
-                documents
+                documents,
+                history
         );
+    }
+
+    private String fullName(User user) {
+        return java.util.stream.Stream.of(user.getFirstName(), user.getLastName())
+                .filter(name -> name != null && !name.isBlank())
+                .reduce((first, last) -> first + " " + last)
+                .orElse("");
     }
 
     private ApplicationSummaryResponse createApplicationSummaryResponse(
@@ -650,13 +872,25 @@ public class ApplicationServiceImpl implements ApplicationService {
                         ? null
                         : student.getInstitute().getName(),
 
+                student.getInstitute() == null
+                        ? null
+                        : student.getInstitute().getId(),
+
                 student.getCourse() == null
                         ? null
                         : student.getCourse().getName(),
 
+                student.getCourse() == null
+                        ? null
+                        : student.getCourse().getId(),
+
                 student.getCategory() == null
                         ? null
                         : student.getCategory().getCode(),
+
+                student.getCategory() == null
+                        ? null
+                        : student.getCategory().getId(),
 
                 addressResponse,
                 student.getLocation(),
@@ -674,7 +908,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                         ? null
                         : verification.getStatus(),
 
-                verification != null,
+                student.getUser().isProfileCompleted(),
                 student.getCreatedAt(),
                 student.getUpdatedAt()
         );
@@ -688,7 +922,7 @@ public class ApplicationServiceImpl implements ApplicationService {
          * through this backend URL.
          */
         String fileUrl =
-                "/api/application/documents/"
+                "/api/document/"
                         + document.getId()
                         + "/file";
 

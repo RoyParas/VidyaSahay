@@ -12,6 +12,8 @@ import com.vidyasahay.vidyasahay.dto.response.scholarshipScheme.ScholarshipSchem
 public interface ScholarshipSchemeService {
 
     List<ScholarshipSchemeSummaryResponseDTO> getAllScholarshipSchemes();
+
+    List<ScholarshipSchemeSummaryResponseDTO> getActiveScholarshipSchemes();
     
     ScholarshipSchemeDetailedResponseDTO  getScholarshipSchemeById(UUID scholarshipSchemeId);
     

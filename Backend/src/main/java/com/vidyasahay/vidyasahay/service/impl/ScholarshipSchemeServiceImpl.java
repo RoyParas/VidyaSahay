@@ -1,6 +1,8 @@
 package com.vidyasahay.vidyasahay.service.impl;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -16,6 +18,7 @@ import com.vidyasahay.vidyasahay.dto.request.scholarshipScheme.ScholarshipEligib
 import com.vidyasahay.vidyasahay.dto.request.scholarshipScheme.UpdateScholarshipSchemeRequestDTO;
 import com.vidyasahay.vidyasahay.dto.response.scholarshipScheme.ScholarshipSchemeDetailedResponseDTO;
 import com.vidyasahay.vidyasahay.dto.response.scholarshipScheme.ScholarshipSchemeSummaryResponseDTO;
+import com.vidyasahay.vidyasahay.dto.response.SchemeDocumentRequirement;
 import com.vidyasahay.vidyasahay.entity.Category;
 import com.vidyasahay.vidyasahay.entity.DocumentType;
 import com.vidyasahay.vidyasahay.entity.Profession;
@@ -30,6 +33,7 @@ import com.vidyasahay.vidyasahay.entity.User;
 import com.vidyasahay.vidyasahay.enums.RoleName;
 import com.vidyasahay.vidyasahay.enums.SchemeStatus;
 import com.vidyasahay.vidyasahay.enums.ScholarshipAmountType;
+import com.vidyasahay.vidyasahay.enums.ScholarshipType;
 import com.vidyasahay.vidyasahay.exception.ResourceNotFoundException;
 import com.vidyasahay.vidyasahay.repository.CategoryRepository;
 import com.vidyasahay.vidyasahay.repository.DocumentTypeRepository;
@@ -101,6 +105,22 @@ public class ScholarshipSchemeServiceImpl implements ScholarshipSchemeService {
                 .map(this::mapToSummaryDto)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<ScholarshipSchemeSummaryResponseDTO> getActiveScholarshipSchemes() {
+        LocalDate today = LocalDate.now();
+        List<ScholarshipSchemeSummaryResponseDTO> schemes = scholarshipSchemeRepository
+                .findByStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                        SchemeStatus.ACTIVE, today, today)
+                .stream()
+                .map(this::mapToSummaryDto)
+                .toList();
+
+        if (schemes.isEmpty()) {
+            throw new ResourceNotFoundException("No active scholarship schemes are available");
+        }
+        return schemes;
+    }
     
     @Override
     public ScholarshipSchemeDetailedResponseDTO getScholarshipSchemeById(UUID scholarshipSchemeId) {
@@ -114,11 +134,17 @@ public class ScholarshipSchemeServiceImpl implements ScholarshipSchemeService {
         ScholarshipBenefitDetail benefitDetail = scholarshipBenefitDetailRepository.findByScholarshipScheme(scheme)
                         .orElseThrow(() -> new ResourceNotFoundException("Benefit details not found"));
         
-        List<String> requiredDocuments = scholarshipSchemeRequiredDocumentRepository
-        				.findByScholarshipSchemeId(scholarshipSchemeId)
-        				.stream()
-                        .map(mapping ->mapping.getDocumentType().getName())
-                        .toList();
+        List<SchemeDocumentRequirement> documentRequirements = scholarshipSchemeRequiredDocumentRepository
+                .findByScholarshipSchemeIdOrderByDocumentTypeNameAsc(scholarshipSchemeId)
+                .stream()
+                .map(mapping -> new SchemeDocumentRequirement(
+                        mapping.getDocumentType().getId(),
+                        mapping.getDocumentType().getName(),
+                        mapping.getDocumentType().getDescription()))
+                .toList();
+        List<String> requiredDocuments = documentRequirements.stream()
+                .map(SchemeDocumentRequirement::name)
+                .toList();
         
         List<String> eligibleProfessions = scholarshipSchemeProfessionRepository
                         .findByScholarshipSchemeId(scholarshipSchemeId)
@@ -150,6 +176,7 @@ public class ScholarshipSchemeServiceImpl implements ScholarshipSchemeService {
                 eligibility.getMinimumPercentageCriteria() == null ? 0.0 : eligibility.getMinimumPercentageCriteria().doubleValue(),
 
                 requiredDocuments,
+                documentRequirements,
 
                 eligibleProfessions,
 
@@ -172,11 +199,16 @@ public class ScholarshipSchemeServiceImpl implements ScholarshipSchemeService {
         Student student = studentRepository.findByUserId(user.getUserId())
         					.orElseThrow(() -> new ResourceNotFoundException("Student not found"));
 
-				if(student.getCategory() == null) {
-						throw new ResourceNotFoundException("Category is not configured for the student");
-				}
+        if (request == null || request.academicPercentage() == null
+                || request.academicPercentage().signum() < 0
+                || request.academicPercentage().compareTo(BigDecimal.valueOf(100)) > 0) {
+            throw new IllegalArgumentException("Academic percentage must be between 0 and 100");
+        }
+        if (student.getAnnualFamilyIncome() == null) {
+            throw new ResourceNotFoundException("Annual family income is not configured for the student");
+        }
 
-        UUID categoryId = student.getCategory().getId();
+        UUID categoryId = student.getCategory() == null ? null : student.getCategory().getId();
 
         if (student.getCourse() == null || student.getCourse().getProfession() == null) {
             throw new ResourceNotFoundException("Profession is not configured for the student");
@@ -194,22 +226,33 @@ public class ScholarshipSchemeServiceImpl implements ScholarshipSchemeService {
             throw new ResourceNotFoundException("No scholarship schemes found for the student's profession");
         }
 
-        Set<UUID> categoryEligibleSchemeIds = scholarshipSchemeCategoryRepository
-        		.findByCategoryId(categoryId)
-        		.stream()
-        		.map(sc -> sc.getScholarshipScheme().getId())
-        		.collect(Collectors.toSet());
+        Set<UUID> categoryEligibleSchemeIds = categoryId == null ? Set.of() : scholarshipSchemeCategoryRepository
+                .findByCategoryId(categoryId)
+                .stream()
+                .map(sc -> sc.getScholarshipScheme().getId())
+                .collect(Collectors.toSet());
 
-				if (categoryEligibleSchemeIds.isEmpty()) {
-            throw new ResourceNotFoundException("No scholarship schemes found for the student's category");
-        }
-
+        LocalDate today = LocalDate.now();
         List<ScholarshipSchemeSummaryResponseDTO> schemes = scholarshipSchemeEligibilityRepository
-                        .findByMinimumPercentageCriteriaLessThanEqualAndMaximumAnnualFamilyIncomeGreaterThanEqual(request.academicPercentage(),request.annualFamilyIncome())
+                        .findByMinimumPercentageCriteriaLessThanEqualAndMaximumAnnualFamilyIncomeGreaterThanEqual(
+                                request.academicPercentage(), student.getAnnualFamilyIncome())
                         .stream()
                         .filter(e -> {
-                            UUID schemeId = e.getScholarshipScheme().getId();
-                            return categoryEligibleSchemeIds.contains(schemeId) && professionEligibleSchemeIds.contains(schemeId);
+                            ScholarshipScheme scheme = e.getScholarshipScheme();
+                            UUID schemeId = scheme.getId();
+                            int age = student.getDateOfBirth() == null ? -1
+                                    : Period.between(student.getDateOfBirth(), today).getYears();
+                            boolean currentlyActive = scheme.getStatus() == SchemeStatus.ACTIVE
+                                    && !scheme.getStartDate().isAfter(today)
+                                    && !scheme.getEndDate().isBefore(today);
+                            boolean ageEligible = e.getMinimumAge() == null || age >= e.getMinimumAge();
+                            ageEligible = ageEligible && (e.getMaximumAge() == null || age <= e.getMaximumAge());
+                            boolean categoryEligible = scheme.getScholarshipType() != ScholarshipType.CATEGORY_BASED
+                                    || (categoryId != null && categoryEligibleSchemeIds.contains(schemeId));
+                            return currentlyActive
+                                    && ageEligible
+                                    && categoryEligible
+                                    && professionEligibleSchemeIds.contains(schemeId);
                         })
                         .map(e -> mapToSummaryDto(e.getScholarshipScheme()))
                         .toList();
@@ -336,8 +379,8 @@ public class ScholarshipSchemeServiceImpl implements ScholarshipSchemeService {
     	    scheme.setStatus(request.status());
     	}
     	
-    	if (scheme.getStartDate().isAfter(scheme.getEndDate())) {
-    	    throw new IllegalArgumentException("Start date must be before end date");
+        if (!scheme.getEndDate().isAfter(scheme.getStartDate())) {
+            throw new IllegalArgumentException("End date must be after start date");
     	}
     	
     	ScholarshipSchemeEligibility eligibility = scholarshipSchemeEligibilityRepository.findByScholarshipScheme(scheme)
@@ -397,6 +440,19 @@ public class ScholarshipSchemeServiceImpl implements ScholarshipSchemeService {
     	            BigDecimal.valueOf(
     	                    request.totalSchemeBudget()));
     	}
+
+        ScholarshipAmountType effectiveAmountType = request.amountType() != null
+                ? request.amountType()
+                : benefit.getAmountType();
+        BigDecimal effectiveScholarshipAmount = benefit.getScholarshipAmount();
+        if (effectiveAmountType == ScholarshipAmountType.PERCENTAGE_OF_FEES
+                && effectiveScholarshipAmount.compareTo(BigDecimal.valueOf(100)) > 0) {
+            throw new IllegalArgumentException("Scholarship percentage cannot exceed 100");
+        }
+        if (effectiveAmountType == ScholarshipAmountType.FIXED_AMOUNT
+                && effectiveScholarshipAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Scholarship amount must be greater than zero");
+        }
     	
     	if (request.requiredDocumentIds() != null) {
     	    scholarshipSchemeRequiredDocumentRepository.deleteByScholarshipSchemeId(scholarshipSchemeId);
@@ -432,8 +488,8 @@ public class ScholarshipSchemeServiceImpl implements ScholarshipSchemeService {
     
     private void validateRequest(CreateScholarshipSchemeRequestDTO request) {
     	
-    	if (request.startDate().isAfter(request.endDate())) {
-    		throw new IllegalArgumentException("Start date must be before end date");
+        if (!request.endDate().isAfter(request.startDate())) {
+            throw new IllegalArgumentException("End date must be after start date");
     	}
     	
     	if (request.applierMinAge() < 0) {

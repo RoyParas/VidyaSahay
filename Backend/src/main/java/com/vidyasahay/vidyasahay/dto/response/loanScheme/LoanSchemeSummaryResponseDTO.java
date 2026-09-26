@@ -1,5 +1,6 @@
 package com.vidyasahay.vidyasahay.dto.response.loanScheme;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 import com.vidyasahay.vidyasahay.enums.InterestType;
@@ -11,8 +12,13 @@ public record LoanSchemeSummaryResponseDTO(
         UUID bankId,
         String schemeName,
         InterestType interestType,
-        int minAmount,
-        int maxAmount,
+        BigDecimal minAmount,
+        BigDecimal maxAmount,
         SchemeStatus status
 ) {
+    public LoanSchemeSummaryResponseDTO(UUID loanSchemeId, UUID bankId, String schemeName,
+            InterestType interestType, int minAmount, int maxAmount, SchemeStatus status) {
+        this(loanSchemeId, bankId, schemeName, interestType, BigDecimal.valueOf(minAmount),
+                BigDecimal.valueOf(maxAmount), status);
+    }
 }

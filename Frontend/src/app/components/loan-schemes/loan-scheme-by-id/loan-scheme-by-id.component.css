@@ -55,6 +55,29 @@
   min-width: 0;
 }
 
+.scheme-hero-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.scheme-update-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 15px;
+  border-radius: var(--radius-sm);
+  background: var(--primary);
+  color: var(--white);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.scheme-update-button:hover { background: var(--primary-dark); color: var(--white); }
+
 .scheme-heading-row {
   display: flex;
   align-items: center;

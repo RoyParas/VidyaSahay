@@ -17,6 +17,10 @@ export class LoanSchemeService {
     return this.http.get<LoanSchemeSummary[]>(`${this.API_URL}/all`);
   }
 
+  getActiveLoanSchemes(): Observable<LoanSchemeSummary[]> {
+    return this.http.get<LoanSchemeSummary[]>(`${this.API_URL}/active`);
+  }
+
   getEligibleLoanSchemes(requiredLoanAmount: number): Observable<LoanSchemeSummary[]> {
     return this.http.post<LoanSchemeSummary[]>(`${this.API_URL}/eligible`, { requiredLoanAmount });
   }
@@ -27,6 +31,10 @@ export class LoanSchemeService {
 
   createLoanScheme(request: Record<string, unknown>): Observable<void> {
     return this.http.post<void>(this.API_URL, request);
+  }
+
+  updateLoanScheme(loanSchemeId: string, request: Record<string, unknown>): Observable<void> {
+    return this.http.patch<void>(`${this.API_URL}/${encodeURIComponent(loanSchemeId)}`, request);
   }
 
   getLoanSchemeById(loanSchemeId: string): Observable<LoanSchemeDetails> {

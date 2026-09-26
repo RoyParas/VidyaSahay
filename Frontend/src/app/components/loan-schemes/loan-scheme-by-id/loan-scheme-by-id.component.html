@@ -4,7 +4,7 @@
 >
   <a
     class="scheme-back-link"
-    routerLink="/loan-schemes"
+    [routerLink]="schemeListRoute"
     aria-label="Back to all loan schemes"
   >
     <svg
@@ -121,9 +121,13 @@
         </p>
       </div>
 
-      <span [ngClass]="getStatusClass(scheme.status)">
-        {{ formatEnumValue(scheme.status) }}
-      </span>
+      <div class="scheme-hero-actions">
+        <span [ngClass]="getStatusClass(scheme.status)">
+          {{ formatEnumValue(scheme.status) }}
+        </span>
+        <button *ngIf="isStudent && canApply" type="button" class="scheme-update-button" (click)="applyForScheme()">Apply now</button>
+        <a *ngIf="canUpdate" class="scheme-update-button" [routerLink]="['/loan-scheme', loanSchemeId, 'edit']">Update scheme</a>
+      </div>
     </header>
 
     <section

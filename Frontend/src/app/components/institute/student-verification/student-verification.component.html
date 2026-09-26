@@ -1,279 +1,50 @@
-<div class="student-verification-page">
+<main class="student-verification-page">
+  <app-student-by-id
+    [studentId]="studentId"
+    (studentLoaded)="onStudentLoaded($event)">
+  </app-student-by-id>
 
-  <div class="page-header">
-    <div class="page-heading">
-      <p class="page-eyebrow">Student Verification</p>
-
-      <h1>Student Application Review</h1>
-
-      <p class="page-description">
-        Review the student's personal, academic, and address information before
-        updating the verification status.
-      </p>
+  <section class="information-section" *ngIf="student && !isVerified">
+    <div class="section-header">
+      <h2>Verification Decision</h2>
+      <p>Enter remarks and select the appropriate verification action.</p>
     </div>
 
-    <div class="current-status-card" *ngIf="student">
-      <span class="current-status-label">Current status</span>
-
-      <span [class]="getStatusBadgeClass(student.verificationStatus)">
-        {{ getStatusLabel(student.verificationStatus) }}
-      </span>
-    </div>
-  </div>
-
-  <div class="loading-container" *ngIf="loading">
-    <span class="page-spinner"></span>
-    <p>Loading student details...</p>
-  </div>
-
-  <div class="alert alert-danger" *ngIf="!loading && !student">
-    Student details could not be loaded.
-  </div>
-
-  <div class="verification-content" *ngIf="!loading && student">
-
-    <section class="information-section">
-      <div class="section-header">
-        <h2>Personal Information</h2>
-        <p>Basic information provided by the student.</p>
-      </div>
-
-      <div class="detail-card">
-        <div class="detail-item">
-          <span class="detail-label">Full Name</span>
-          <span class="detail-value">{{ fullName }}</span>
-        </div>
-
-        <div class="detail-item">
-          <span class="detail-label">Email Address</span>
-          <span class="detail-value">{{ student.email || '-' }}</span>
-        </div>
-
-        <div class="detail-item">
-          <span class="detail-label">Mobile Number</span>
-          <span class="detail-value">{{ student.mobile || '-' }}</span>
-        </div>
-
-        <div class="detail-item">
-          <span class="detail-label">Gender</span>
-          <span class="detail-value">{{ student.gender || '-' }}</span>
-        </div>
-
-        <div class="detail-item">
-          <span class="detail-label">Date of Birth</span>
-          <span class="detail-value">
-            {{ student.dateOfBirth ? (student.dateOfBirth | date:'dd MMMM yyyy') : '-' }}
-          </span>
-        </div>
-
-        <div class="detail-item">
-          <span class="detail-label">Category</span>
-          <span class="detail-value">{{ student.category || '-' }}</span>
-        </div>
-
-        <div class="detail-item">
-          <span class="detail-label">Father's Name</span>
-          <span class="detail-value">{{ student.fatherName || '-' }}</span>
-        </div>
-
-        <div class="detail-item">
-          <span class="detail-label">Mother's Name</span>
-          <span class="detail-value">{{ student.motherName || '-' }}</span>
-        </div>
-      </div>
-    </section>
-
-    <section class="information-section">
-      <div class="section-header">
-        <h2>Academic Information</h2>
-        <p>Current course and institute details.</p>
-      </div>
-
-      <div class="detail-card">
-        <div class="detail-item">
-          <span class="detail-label">Institute</span>
-          <span class="detail-value">{{ student.institute || '-' }}</span>
-        </div>
-
-        <div class="detail-item">
-          <span class="detail-label">Course</span>
-          <span class="detail-value">{{ student.course || '-' }}</span>
-        </div>
-
-        <div class="detail-item">
-          <span class="detail-label">Category</span>
-          <span class="detail-value">{{ student.category || '-' }}</span>
-        </div>
-
-        <div class="detail-item">
-          <span class="detail-label">Profile Completed</span>
-          <span class="detail-value" [class.text-success]="student.profileCompleted"
-            [class.text-danger]="!student.profileCompleted">
-            {{ student.profileCompleted ? 'Yes' : 'No' }}
-          </span>
-        </div>
-      </div>
-    </section>
-
-    <section class="information-section">
-      <div class="section-header">
-        <h2>Financial Information</h2>
-        <p>Student fees and annual family income details.</p>
-      </div>
-
-      <div class="detail-card">
-        <div class="detail-item">
-          <span class="detail-label">Fees Paid</span>
-          <span class="detail-value">
-            {{ student.feesPaid != null ? (student.feesPaid | currency:'INR':'symbol':'1.2-2') : '-' }}
-          </span>
-        </div>
-
-        <div class="detail-item">
-          <span class="detail-label">Fees Pending</span>
-          <span class="detail-value">
-            {{ student.feesPending != null ? (student.feesPending | currency:'INR':'symbol':'1.2-2') : '-' }}
-          </span>
-        </div>
-
-        <div class="detail-item detail-item-full">
-          <span class="detail-label">Annual Family Income</span>
-          <span class="detail-value">
-            {{ student.annualFamilyIncome != null
-            ? (student.annualFamilyIncome | currency:'INR':'symbol':'1.2-2')
-            : '-'
-            }}
-          </span>
-        </div>
-      </div>
-    </section>
-
-    <section class="information-section">
-      <div class="section-header">
-        <h2>Address Information</h2>
-        <p>Current address information provided by the student.</p>
-      </div>
-
-      <div class="detail-card">
-        <div class="detail-item">
-          <span class="detail-label">Country</span>
-          <span class="detail-value">
-            {{ student.address?.country || '-' }}
-          </span>
-        </div>
-
-        <div class="detail-item">
-          <span class="detail-label">State</span>
-          <span class="detail-value">
-            {{ student.address?.state || '-' }}
-          </span>
-        </div>
-
-        <div class="detail-item">
-          <span class="detail-label">District</span>
-          <span class="detail-value">
-            {{ student.address?.district || '-' }}
-          </span>
-        </div>
-
-        <div class="detail-item">
-          <span class="detail-label">City</span>
-          <span class="detail-value">
-            {{ student.address?.city || '-' }}
-          </span>
-        </div>
-
-        <div class="detail-item">
-          <span class="detail-label">Location</span>
-          <span class="detail-value">{{ student.location || '-' }}</span>
-        </div>
-
-        <div class="detail-item">
-          <span class="detail-label">Pincode</span>
-          <span class="detail-value">{{ student.pincode || '-' }}</span>
-        </div>
-
-        <div class="detail-item detail-item-full">
-          <span class="detail-label">Complete Address</span>
-          <span class="detail-value">{{ completeAddress }}</span>
-        </div>
-      </div>
-    </section>
-
-    <section *ngIf="!isVerified && !isAdmin" class="information-section">
-      <div class="section-header">
-        <h2>Verification Decision</h2>
-        <p>Enter remarks and select the appropriate verification action.</p>
-      </div>
-
-      <form class="verification-form" [formGroup]="verificationForm" novalidate>
-        <div class="form-group">
-          <label for="remark" class="form-label">
-            Remarks <span class="required">*</span>
-          </label>
-
-          <textarea id="remark" class="form-textarea" formControlName="remark"
-            placeholder="Enter remarks for this verification decision..." maxlength="1000"
-            [class.invalid]="remarkControl?.invalid && (remarkControl?.touched || submitted)"></textarea>
-
-          <div class="remark-footer">
-            <div>
-              <span class="form-error" *ngIf="remarkControl?.errors && (remarkControl?.touched || submitted)">
-                <span *ngIf="remarkControl?.errors?.['required']">
-                  Remark is required.
-                </span>
-
-                <span *ngIf="remarkControl?.errors?.['maxlength']">
-                  Remark cannot exceed 1000 characters.
-                </span>
-              </span>
-
-              <span class="form-help" *ngIf="!remarkControl?.errors || (!remarkControl?.touched && !submitted)">
-                Provide a clear reason before changing the verification status.
-              </span>
-            </div>
-
-            <span class="character-count" [class.character-limit]="remarkLength >= 1000">
-              {{ remarkLength }}/1000
+    <form class="verification-form" [formGroup]="verificationForm" novalidate>
+      <div class="form-group">
+        <label for="remark" class="form-label">Remarks <span class="required">*</span></label>
+        <textarea id="remark" class="form-textarea" formControlName="remark"
+          placeholder="Enter remarks for this verification decision..." maxlength="1000"
+          [class.invalid]="remarkControl?.invalid && (remarkControl?.touched || submitted)"></textarea>
+        <div class="remark-footer">
+          <div>
+            <span class="form-error" *ngIf="remarkControl?.errors && (remarkControl?.touched || submitted)">
+              <span *ngIf="remarkControl?.errors?.['required']">Remark is required.</span>
+              <span *ngIf="remarkControl?.errors?.['maxlength']">Remark cannot exceed 1000 characters.</span>
+            </span>
+            <span class="form-help" *ngIf="!remarkControl?.errors || (!remarkControl?.touched && !submitted)">
+              Provide a clear reason before changing the verification status.
             </span>
           </div>
+          <span class="character-count" [class.character-limit]="remarkLength >= 1000">{{ remarkLength }}/1000</span>
         </div>
+      </div>
 
-        <div class="verification-actions">
-          <p class="action-label">Mark verification status</p>
-
-          <div class="alert alert-info verified-status-message" *ngIf="isVerified">
-            This student is already verified. The status cannot be changed to rejected.
-          </div>
-
-          <div class="action-buttons">
-            <button class="btn btn-success" type="button"
-              [disabled]="updatingStatus || verificationForm.invalid || isVerified" (click)="verifyStudent()">
-              <span class="spinner" *ngIf="isUpdating(VerificationStatus.VERIFIED)"></span>
-
-              {{
-              isUpdating(VerificationStatus.VERIFIED)
-              ? 'Verifying...'
-              : isVerified
-              ? 'Already Verified'
-              : 'Verify'
-              }}
-            </button>
-
-            <button class="btn btn-danger" type="button"
-              [disabled]="updatingStatus || verificationForm.invalid || isVerified" (click)="rejectStudent()">
-              <span class="spinner" *ngIf="isUpdating(VerificationStatus.REJECTED)"></span>
-
-              {{
-              isUpdating(VerificationStatus.REJECTED)
-              ? 'Rejecting...'
-              : 'Reject'
-              }}
-            </button>
-          </div>
+      <div class="verification-actions">
+        <p class="action-label">Mark verification status</p>
+        <div class="action-buttons">
+          <button class="btn btn-success" type="button"
+            [disabled]="updatingStatus || verificationForm.invalid" (click)="verifyStudent()">
+            <span class="spinner" *ngIf="isUpdating(VerificationStatus.VERIFIED)"></span>
+            {{ isUpdating(VerificationStatus.VERIFIED) ? 'Verifying...' : 'Verify' }}
+          </button>
+          <button class="btn btn-danger" type="button"
+            [disabled]="updatingStatus || verificationForm.invalid" (click)="rejectStudent()">
+            <span class="spinner" *ngIf="isUpdating(VerificationStatus.REJECTED)"></span>
+            {{ isUpdating(VerificationStatus.REJECTED) ? 'Rejecting...' : 'Reject' }}
+          </button>
         </div>
-      </form>
-    </section>
-
-  </div>
-</div>
+      </div>
+    </form>
+  </section>
+</main>

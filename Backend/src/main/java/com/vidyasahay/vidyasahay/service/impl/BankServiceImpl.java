@@ -179,6 +179,9 @@ public class BankServiceImpl implements BankService {
         user.setLastName(request.lastName().trim());
         user.setEmail(normalizedEmail);
         user.setMobile(normalizedMobile);
+        if (request.status() != null) {
+            user.setActive(request.status());
+        }
 
         userRepository.save(user);
     }

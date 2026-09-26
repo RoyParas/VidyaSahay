@@ -105,7 +105,8 @@ export class CommonTableComponent implements OnChanges {
     this.currentPage = Math.min(Math.max(page, 1), this.totalPages);
   }
 
-  onAction(actionId: string, row: Record<string, unknown>): void {
+  onAction(actionId: string, row: Record<string, unknown>, event?: Event): void {
+    event?.stopPropagation();
     this.actionClick.emit({ actionId, row });
   }
 

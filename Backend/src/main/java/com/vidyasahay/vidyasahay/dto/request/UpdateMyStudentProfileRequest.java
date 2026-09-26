@@ -1,0 +1,37 @@
+package com.vidyasahay.vidyasahay.dto.request;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.UUID;
+
+import com.vidyasahay.vidyasahay.enums.Gender;
+
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
+public record UpdateMyStudentProfileRequest(
+        @NotNull(message = "Institute is required") UUID instituteId,
+        @NotNull(message = "Course is required") UUID courseId,
+        @NotNull(message = "Category is required") UUID categoryId,
+        @NotNull(message = "City is required") UUID addressId,
+        @Size(max = 255, message = "Area or street must not exceed 255 characters") String location,
+        @NotNull(message = "PIN code is required")
+        @Min(value = 100000, message = "PIN code must contain 6 digits")
+        @Max(value = 999999, message = "PIN code must contain 6 digits") Integer pincode,
+        @Pattern(regexp = "^$|^[0-9]{12}$", message = "Aadhaar number must contain exactly 12 digits")
+        String aadharNumber,
+        @NotNull(message = "Gender is required") Gender gender,
+        @NotNull(message = "Date of birth is required") @Past(message = "Date of birth must be in the past") LocalDate dateOfBirth,
+        @NotBlank(message = "Father's name is required") @Size(max = 150, message = "Father's name must not exceed 150 characters") String fatherName,
+        @NotBlank(message = "Mother's name is required") @Size(max = 150, message = "Mother's name must not exceed 150 characters") String motherName,
+        @NotNull(message = "Annual family income is required")
+        @DecimalMin(value = "0.00", message = "Annual family income cannot be negative")
+        @Digits(integer = 13, fraction = 2, message = "Annual family income supports up to 13 integer digits and 2 decimal places") BigDecimal annualFamilyIncome
+) {}

@@ -4,8 +4,11 @@
   [columns]="columns"
   [rows]="rows"
   [loading]="loading"
-  [emptyTitle]="errorMessage ? 'Unable to load loan schemes' : 'No loan schemes found'"
+  [emptyTitle]="errorMessage ? 'No loan schemes found' : 'Unable to load loan schemes'"
   [emptyMessage]="errorMessage || 'There are no loan schemes to display.'"
   [showIndex]="true"
+  [actions]="actions"
+  [showActions]="canUpdate"
   (rowClick)="onRowClick($event)"
+  (actionClick)="onActionClick($event)"
 ></app-common-table>

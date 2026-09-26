@@ -42,7 +42,7 @@ class InstituteControllerTest {
 
     private InstituteDetailedResponse detail(UUID instituteId) {
         return new InstituteDetailedResponse(
-                instituteId, "Ravi", "Kumar", "ravi@vidya.edu", "9812345678",
+                instituteId, "Ravi", "Kumar", "ravi@vidya.edu", "9812345678",true,
                 "Vidya Institute of Technology",
                 new AddressResponse(UUID.randomUUID(), "India", "Maharashtra", "Mumbai Suburban", "Mumbai"),
                 "Andheri", 400053, "State Bank", "Andheri West", "SBIN0001234", "12345678901");

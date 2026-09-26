@@ -7,12 +7,14 @@ import java.util.UUID;
 import com.vidyasahay.vidyasahay.enums.Gender;
 
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 public record CompleteStudentProfileRequest(
 
@@ -28,6 +30,7 @@ public record CompleteStudentProfileRequest(
         @NotNull(message = "Address ID is required")
         UUID addressId,
 
+        @Size(max = 255, message = "Area or street must not exceed 255 characters")
         String location,
 
         @NotNull(message = "Pincode is required")
@@ -50,12 +53,19 @@ public record CompleteStudentProfileRequest(
         LocalDate dateOfBirth,
 
         @NotBlank(message = "Father name is required")
+        @Size(max = 150, message = "Father name must not exceed 150 characters")
         String fatherName,
 
         @NotBlank(message = "Mother name is required")
+        @Size(max = 150, message = "Mother name must not exceed 150 characters")
         String motherName,
 
         @NotNull(message = "Annual family income is required")
+        @Digits(
+                integer = 13,
+                fraction = 2,
+                message = "Annual family income supports up to 13 integer digits and 2 decimal places"
+        )
         @DecimalMin(
                 value = "0.00",
                 message = "Annual family income cannot be negative"

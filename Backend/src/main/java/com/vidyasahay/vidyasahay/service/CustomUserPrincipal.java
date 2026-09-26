@@ -21,6 +21,7 @@ public class CustomUserPrincipal implements UserDetails {
     private final RoleName role;
     private final boolean active;
     private final boolean mustChangePassword;
+    private final boolean profileCompleted;
 
     public CustomUserPrincipal(
             UUID userId,
@@ -30,7 +31,8 @@ public class CustomUserPrincipal implements UserDetails {
             String hashedPassword,
             RoleName role,
             boolean active,
-            boolean mustChangePassword
+            boolean mustChangePassword,
+            boolean profileCompleted
     ) {
         this.userId = userId;
         this.firstName = firstName;
@@ -40,6 +42,7 @@ public class CustomUserPrincipal implements UserDetails {
         this.role = role;
         this.active = active;
         this.mustChangePassword = mustChangePassword;
+        this.profileCompleted = profileCompleted;
     }
 
     public static CustomUserPrincipal from(User user) {
@@ -51,7 +54,8 @@ public class CustomUserPrincipal implements UserDetails {
                 user.getHashedPassword(),
                 user.getRole().getName(),
                 user.isActive(),
-                user.isMustChangePassword()
+                user.isMustChangePassword(),
+                user.isProfileCompleted()
         );
     }
 
@@ -73,6 +77,10 @@ public class CustomUserPrincipal implements UserDetails {
 
     public boolean isMustChangePassword() {
         return mustChangePassword;
+    }
+
+    public boolean isProfileCompleted() {
+        return profileCompleted;
     }
 
     @Override

@@ -1,13 +1,17 @@
+import { VerificationStatus } from "../enums/verification-status.enum";
+
 export interface StudentSummary {
   [key: string]: unknown;
-  studentId: string;
+  studentId: string | null;
+  userId: string;
   firstName: string;
   lastName: string;
   email: string;
   mobile: string;
-  maskedAadharNumber: string;
-  courseName: string;
-  instituteName: string;
+  verificationStatus: VerificationStatus | null;
+  courseName: string | null;
+  instituteName: string | null;
+  profileCompleted: boolean;
 }
 export interface InstituteAccountSummary {
   [key: string]: unknown;

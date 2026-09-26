@@ -1,0 +1,74 @@
+<div class="student-profile-page">
+  <header class="page-header">
+    <div>
+      <p class="page-eyebrow">Student Profile</p>
+      <h1>{{ selfProfile ? 'My Profile' : 'Student Details' }}</h1>
+      <p class="page-description">Personal, academic, financial, and address information.</p>
+    </div>
+    <div class="profile-header-actions">
+      <a *ngIf="selfProfile" routerLink="/my-profile/edit" class="update-profile-button">Update Profile</a>
+      <div class="status-card" *ngIf="student">
+        <span class="status-label">Verification status</span>
+        <span class="badge" [ngClass]="{
+          'badge-approved': student.verificationStatus === 'VERIFIED',
+          'badge-rejected': student.verificationStatus === 'REJECTED',
+          'badge-pending': !student.verificationStatus || student.verificationStatus === 'PENDING'
+        }">{{ student.verificationStatus || 'PENDING' }}</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="loading-container" *ngIf="loading">
+    <span class="page-spinner"></span><p>Loading student details...</p>
+  </div>
+  <div class="alert alert-danger" *ngIf="!loading && !student">Student details could not be loaded.</div>
+
+  <div class="profile-content" *ngIf="!loading && student as profile">
+    <section class="information-section">
+      <div class="section-header"><h2>Personal Information</h2><p>Basic information provided by the student.</p></div>
+      <div class="detail-card">
+        <div class="detail-item"><span class="detail-label">Full Name</span><span class="detail-value">{{ fullName }}</span></div>
+        <div class="detail-item"><span class="detail-label">Email Address</span><span class="detail-value">{{ profile.email || '-' }}</span></div>
+        <div class="detail-item"><span class="detail-label">Mobile Number</span><span class="detail-value">{{ profile.mobile || '-' }}</span></div>
+        <div class="detail-item"><span class="detail-label">Gender</span><span class="detail-value">{{ profile.gender || '-' }}</span></div>
+        <div class="detail-item"><span class="detail-label">Date of Birth</span><span class="detail-value">{{ profile.dateOfBirth ? (profile.dateOfBirth | date:'dd MMMM yyyy') : '-' }}</span></div>
+        <div class="detail-item"><span class="detail-label">Aadhaar</span><span class="detail-value">{{ profile.maskedAadharNumber || '-' }}</span></div>
+        <div class="detail-item"><span class="detail-label">Category</span><span class="detail-value">{{ profile.category || '-' }}</span></div>
+        <div class="detail-item"><span class="detail-label">Father's Name</span><span class="detail-value">{{ profile.fatherName || '-' }}</span></div>
+        <div class="detail-item"><span class="detail-label">Mother's Name</span><span class="detail-value">{{ profile.motherName || '-' }}</span></div>
+      </div>
+    </section>
+
+    <section class="information-section">
+      <div class="section-header"><h2>Academic Information</h2><p>Current course and institute details.</p></div>
+      <div class="detail-card">
+        <div class="detail-item"><span class="detail-label">Institute</span><span class="detail-value">{{ profile.institute || '-' }}</span></div>
+        <div class="detail-item"><span class="detail-label">Course</span><span class="detail-value">{{ profile.course || '-' }}</span></div>
+        <div class="detail-item"><span class="detail-label">Category</span><span class="detail-value">{{ profile.category || '-' }}</span></div>
+        <div class="detail-item"><span class="detail-label">Profile Completed</span><span class="detail-value" [class.text-success]="profile.profileCompleted" [class.text-danger]="!profile.profileCompleted">{{ profile.profileCompleted ? 'Yes' : 'No' }}</span></div>
+      </div>
+    </section>
+
+    <section class="information-section">
+      <div class="section-header"><h2>Financial Information</h2><p>Student fees and annual family income details.</p></div>
+      <div class="detail-card">
+        <div class="detail-item"><span class="detail-label">Fees Paid</span><span class="detail-value">{{ profile.feesPaid != null ? (profile.feesPaid | currency:'INR':'symbol':'1.2-2') : '-' }}</span></div>
+        <div class="detail-item"><span class="detail-label">Fees Pending</span><span class="detail-value">{{ profile.feesPending != null ? (profile.feesPending | currency:'INR':'symbol':'1.2-2') : '-' }}</span></div>
+        <div class="detail-item detail-item-full"><span class="detail-label">Annual Family Income</span><span class="detail-value">{{ profile.annualFamilyIncome != null ? (profile.annualFamilyIncome | currency:'INR':'symbol':'1.2-2') : '-' }}</span></div>
+      </div>
+    </section>
+
+    <section class="information-section">
+      <div class="section-header"><h2>Address Information</h2><p>Current address information provided by the student.</p></div>
+      <div class="detail-card">
+        <div class="detail-item"><span class="detail-label">Country</span><span class="detail-value">{{ profile.address?.country || '-' }}</span></div>
+        <div class="detail-item"><span class="detail-label">State</span><span class="detail-value">{{ profile.address?.state || '-' }}</span></div>
+        <div class="detail-item"><span class="detail-label">District</span><span class="detail-value">{{ profile.address?.district || '-' }}</span></div>
+        <div class="detail-item"><span class="detail-label">City</span><span class="detail-value">{{ profile.address?.city || '-' }}</span></div>
+        <div class="detail-item"><span class="detail-label">Location</span><span class="detail-value">{{ profile.location || '-' }}</span></div>
+        <div class="detail-item"><span class="detail-label">Pincode</span><span class="detail-value">{{ profile.pincode || '-' }}</span></div>
+        <div class="detail-item detail-item-full"><span class="detail-label">Complete Address</span><span class="detail-value">{{ completeAddress }}</span></div>
+      </div>
+    </section>
+  </div>
+</div>

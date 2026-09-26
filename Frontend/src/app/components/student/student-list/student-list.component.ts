@@ -25,13 +25,27 @@ export class StudentListComponent implements OnInit {
   loading = true;
   errorMessage = '';
   title = 'Students';
-  subtitle = 'Student profiles registered on VidyaSahay.';
-  
+  subtitle = 'Registered student accounts, including profiles awaiting completion.';
+
   columns: CommonTableColumn[] = [
     { key: 'name', label: 'Name' },
     { key: 'email', label: 'Email' },
     { key: 'mobile', label: 'Mobile' },
-    { key: 'maskedAadharNumber', label: 'Aadhaar' },
+    {
+      key: 'profileCompleted',
+      label: 'Profile Status',
+      type: 'badge',
+      badgeMap: { true: 'vs-badge-verified', false: 'vs-badge-pending' },
+      formatter: value => value ? 'Complete' : 'Incomplete'
+    },
+    { key: 'verificationStatus',
+      label: 'Verification Status',
+      type: 'badge',
+      badgeMap: {
+        pending: 'vs-badge-pending',
+        verified: 'vs-badge-verified',
+        rejected: 'vs-badge-rejected',
+      } },
     { key: 'courseName', label: 'Course' },
     { key: 'instituteName', label: 'Institute' },
   ];
@@ -42,7 +56,7 @@ export class StudentListComponent implements OnInit {
     if (isInstitute) {
       this.title = 'My Students';
       this.subtitle = 'Students enrolled at your institute.';
-      this.columns = this.columns.filter(column => column.key !== 'instituteName');
+      this.columns = this.columns.filter(column => column.key !== 'instituteName' && column.key !== 'profileCompleted');
     }
 
     request.subscribe({
@@ -61,7 +75,11 @@ export class StudentListComponent implements OnInit {
   }
 
   onRowClick(row: Record<string, unknown>): void {
-    const studentId = row['studentId'] as string;
-    this.router.navigate(['student', studentId]);
+    const studentId = row['studentId'] as string | null;
+    if (!studentId) return;
+    const isInstitute = this.authService.getRole() === UserRole.INSTITUTE;
+    this.router.navigate(isInstitute
+      ? ['student-verification', studentId]
+      : ['student', studentId]);
   }
 }

@@ -4,7 +4,22 @@
     class="toast-item"
     [ngClass]="getToastClass(toast.type)"
   >
-    <div class="toast-icon">{{ toast.type.charAt(0).toUpperCase() }}</div>
+    <div class="toast-icon" aria-hidden="true">
+      <svg *ngIf="toast.type === 'success'" viewBox="0 0 24 24" fill="none">
+        <path d="m5 12.5 4.5 4.5L19 7" />
+      </svg>
+      <svg *ngIf="toast.type === 'error'" viewBox="0 0 24 24" fill="none">
+        <path d="m7 7 10 10M17 7 7 17" />
+      </svg>
+      <svg *ngIf="toast.type === 'warning'" viewBox="0 0 24 24" fill="none">
+        <path d="M12 3.5 22 21H2L12 3.5Z" />
+        <path d="M12 9v5M12 17.5v.01" />
+      </svg>
+      <svg *ngIf="toast.type === 'info'" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 11v5M12 8v.01" />
+      </svg>
+    </div>
 
     <div class="toast-content">
       <strong>{{ toast.title }}</strong>

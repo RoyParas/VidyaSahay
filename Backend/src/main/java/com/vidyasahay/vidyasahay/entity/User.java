@@ -34,6 +34,9 @@ public class User extends BaseEntity {
 	@Column(name = "must_change_password", nullable = false)
 	private boolean mustChangePassword;
 
+	@Column(name = "profile_completed", nullable = false)
+	private boolean profileCompleted = true;
+
 	@Column(name = "is_active", nullable = false)
 	private boolean active;
 
@@ -102,6 +105,14 @@ public class User extends BaseEntity {
 
 	public void setMustChangePassword(boolean mustChangePassword) {
 		this.mustChangePassword = mustChangePassword;
+	}
+
+	public boolean isProfileCompleted() {
+		return profileCompleted;
+	}
+
+	public void setProfileCompleted(boolean profileCompleted) {
+		this.profileCompleted = profileCompleted;
 	}
 
 	public boolean isActive() {

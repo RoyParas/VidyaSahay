@@ -5,7 +5,7 @@
   <!-- Back navigation -->
   <a
     class="scheme-back-link"
-    routerLink="/scholarship-schemes"
+    [routerLink]="schemeListRoute"
     aria-label="Back to all scholarship schemes"
   >
     <svg
@@ -87,7 +87,7 @@
 
       <a
         class="btn btn-secondary"
-        routerLink="/scholarship-schemes"
+        [routerLink]="schemeListRoute"
       >
         View all scholarships
       </a>
@@ -135,9 +135,13 @@
         </p>
       </div>
 
-      <span [ngClass]="getStatusClass(scheme.status)">
-        {{ formatEnumValue(scheme.status) }}
-      </span>
+      <div class="scheme-hero-actions">
+        <span [ngClass]="getStatusClass(scheme.status)">
+          {{ formatEnumValue(scheme.status) }}
+        </span>
+        <button *ngIf="isStudent && canApply" type="button" class="scheme-update-button" (click)="applyForScheme()">Apply now</button>
+        <a *ngIf="canUpdate" class="scheme-update-button" [routerLink]="['/scholarship-scheme', scholarshipSchemeId, 'edit']">Update scheme</a>
+      </div>
     </header>
 
     <!-- Scholarship summary -->

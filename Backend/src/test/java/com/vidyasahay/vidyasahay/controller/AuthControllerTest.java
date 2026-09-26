@@ -91,7 +91,7 @@ class AuthControllerTest {
     @DisplayName("POST /api/auth/login returns 200 with the login payload")
     void login_success() throws Exception {
         AuthenticatedUserResponse user = new AuthenticatedUserResponse(
-                UUID.randomUUID(), "Jane", "Doe", "jane@example.com", RoleName.STUDENT, false);
+                UUID.randomUUID(), "Jane", "Doe", "jane@example.com", RoleName.STUDENT, false, true);
 
         when(authService.login(any(LoginRequest.class)))
                 .thenReturn(new LoginResponse("jwt-token", 3600L, user));

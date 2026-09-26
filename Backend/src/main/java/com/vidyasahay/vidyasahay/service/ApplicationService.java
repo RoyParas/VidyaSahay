@@ -15,6 +15,8 @@ public interface ApplicationService {
             UUID applicationId
     );
 
+    ApplicationDetailResponse getApplicationById(UUID applicationId, CustomUserPrincipal principal);
+
     List<ApplicationSummaryResponse> getMyApplications(
             CustomUserPrincipal principal
     );
@@ -28,4 +30,7 @@ public interface ApplicationService {
             ApplicationActionRequest request,
             CustomUserPrincipal principal
     );
+
+    ApplicationDetailResponse resubmit(UUID applicationId, ApplyApplicationRequest request,
+            CustomUserPrincipal principal);
 }

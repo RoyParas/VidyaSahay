@@ -3,6 +3,8 @@ import { Router } from '@angular/router';
 import { CommonTableColumn, CommonTableComponent } from '../../../shared/common-table/common-table.component';
 import { ApplicationService } from '../../../core/services/application.service';
 import { ApplicationSummary } from '../../../core/models/summaryResponse.dto';
+import { AuthService } from '../../../core/services/auth.service';
+import { UserRole } from '../../../core/enums/user-role.enum';
 
 @Component({
   selector: 'app-application-list',
@@ -13,10 +15,17 @@ import { ApplicationSummary } from '../../../core/models/summaryResponse.dto';
 })
 export class ApplicationListComponent implements OnInit {
   private readonly applicationService = inject(ApplicationService);
+  private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   rows: ApplicationSummary[] = [];
   loading = true;
   errorMessage = '';
+
+  get tableTitle(): string {
+    return this.authService.getRole() === UserRole.INSTITUTE
+      ? 'Student applications'
+      : 'My applications';
+  }
 
   readonly columns: CommonTableColumn[] = [
     { key: 'id', label: 'Application ID', formatter: value => String(value ?? '').slice(0, 8).toUpperCase() },

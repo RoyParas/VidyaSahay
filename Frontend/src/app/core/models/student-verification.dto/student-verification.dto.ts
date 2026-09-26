@@ -16,8 +16,11 @@ export interface StudentDetailedResponse {
   email: string;
   mobile: string;
   institute: string;
+  instituteId: string;
   course: string;
+  courseId: string;
   category: string;
+  categoryId: string;
   address: AddressResponse | null;
   location: string;
   pincode: number;

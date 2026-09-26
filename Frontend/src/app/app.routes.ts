@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './core/guards/auth.guard';
+import { authGuard, changePasswordGuard, completeProfileGuard, onboardingGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { UserRole } from './core/enums/user-role.enum';
 import { MainLayoutComponent } from './layouts/main-layout/main-layout.component';
@@ -22,6 +22,18 @@ export const routes: Routes = [
         .then(c => c.RegisterComponent)
   },
   {
+    path: 'change-password',
+    canActivate: [authGuard, changePasswordGuard],
+    loadComponent: () => import('./components/auth/change-password/change-password.component')
+      .then(c => c.ChangePasswordComponent)
+  },
+  {
+    path: 'complete-profile',
+    canActivate: [authGuard, completeProfileGuard],
+    loadComponent: () => import('./components/student/complete-profile/complete-profile.component')
+      .then(c => c.CompleteProfileComponent)
+  },
+  {
     path: '',
     component: PublicLayoutComponent,
     children: [
@@ -39,6 +51,7 @@ export const routes: Routes = [
     path: '',
     component: MainLayoutComponent,
     canActivate: [authGuard, roleGuard],
+    canActivateChild: [onboardingGuard],
     children: [
       // ADMIN ONLY ROUTES
       {
@@ -54,8 +67,8 @@ export const routes: Routes = [
           {
             path: 'student/:studentId',
             loadComponent: () =>
-              import('./components/institute/student-verification/student-verification.component')
-                .then(c => c.StudentVerificationComponent)
+              import('./components/student/student-by-id/student-by-id.component')
+                .then(c => c.StudentByIdComponent)
           },
           {
             path: 'institutes',
@@ -83,6 +96,14 @@ export const routes: Routes = [
           }
         ]
       },
+      {
+        path: 'loan-schemes/eligible',
+        canActivate: [roleGuard],
+        data: {roles: [UserRole.STUDENT]},
+        loadComponent: () =>
+          import('./components/student/eligible-loans/eligible-loans.component')
+            .then(c => c.EligibleLoansComponent)
+      },
       // BANK ONLY ROUTES
       {
         path: '',
@@ -95,12 +116,40 @@ export const routes: Routes = [
                 .then(c => c.LoanSchemeListComponent)
           },
           {
+            path: 'loan-schemes/:loanSchemeId',
+            loadComponent: () =>
+              import('./components/loan-schemes/loan-scheme-by-id/loan-scheme-by-id.component')
+                .then(c => c.LoanSchemeByIdComponent)
+          },
+          {
+            path: 'loan-scheme/:loanSchemeId/edit',
+            loadComponent: () =>
+              import('./components/loan-schemes/create-loan-scheme/create-loan-scheme.component')
+                .then(c => c.CreateLoanSchemeComponent)
+          },
+          {
             path: 'loan-scheme/create',
             loadComponent: () =>
               import('./components/loan-schemes/create-loan-scheme/create-loan-scheme.component')
                 .then(c => c.CreateLoanSchemeComponent)
           },
         ]
+      },
+      {
+        path: 'scholarship-schemes/eligible',
+        canActivate: [roleGuard],
+        data: {roles: [UserRole.STUDENT]},
+        loadComponent: () =>
+          import('./components/student/eligible-scholarships/eligible-scholarships.component')
+            .then(c => c.EligibleScholarshipsComponent)
+      },
+      {
+        path: 'applications/apply/:applicationType/:schemeId',
+        canActivate: [roleGuard],
+        data: {roles: [UserRole.STUDENT]},
+        loadComponent: () =>
+          import('./components/application/apply-application/apply-application.component')
+            .then(c => c.ApplyApplicationComponent)
       },
       // GOVERNMENT ONLY ROUTES
       {
@@ -112,6 +161,18 @@ export const routes: Routes = [
             loadComponent: () =>
               import('./components/scholarship-schemes/scholarship-scheme-list/scholarship-scheme-list.component')
                 .then(c => c.ScholarshipSchemeListComponent)
+          },
+          {
+            path: 'scholarship-schemes/:scholarshipSchemeId',
+            loadComponent: () =>
+              import('./components/scholarship-schemes/scholarship-scheme-by-id/scholarship-scheme-by-id.component')
+                .then(c => c.ScholarshipSchemeByIdComponent)
+          },
+          {
+            path: 'scholarship-scheme/:scholarshipSchemeId/edit',
+            loadComponent: () =>
+              import('./components/scholarship-schemes/create-scholarship-scheme/create-scholarship-scheme.component')
+                .then(c => c.CreateScholarshipSchemeComponent)
           },
           {
             path: 'scholarship-scheme/create',
@@ -152,17 +213,19 @@ export const routes: Routes = [
         data: {roles: [UserRole.STUDENT]},
         children: [
           {
-            path: 'loan-schemes/eligible',
+            path: 'my-profile',
+            data: {selfProfile: true},
             loadComponent: () =>
-              import('./components/student/eligible-loans/eligible-loans.component')
-                .then(c => c.EligibleLoansComponent)
+              import('./components/student/student-by-id/student-by-id.component')
+                .then(c => c.StudentByIdComponent)
           },
           {
-            path: 'scholarship-schemes/eligible',
+            path: 'my-profile/edit',
+            data: {selfProfile: true, editProfile: true},
             loadComponent: () =>
-              import('./components/student/eligible-scholarships/eligible-scholarships.component')
-                .then(c => c.EligibleScholarshipsComponent)
-          }
+              import('./components/student/complete-profile/complete-profile.component')
+                .then(c => c.CompleteProfileComponent)
+          },
         ]
       },
       // BOTH SCHEME-ID ACESSIBLE BY ADMIN, STUDENT AND SPECIFIC SCHEME ACCESSIBLE BY BANK AND GOVT
@@ -172,14 +235,12 @@ export const routes: Routes = [
         children: [
           {
             path: 'scholarship-schemes/:scholarshipSchemeId',
-            data: {roles: [UserRole.GOVERNMENT]},
             loadComponent: () =>
               import('./components/scholarship-schemes/scholarship-scheme-by-id/scholarship-scheme-by-id.component')
                 .then(c => c.ScholarshipSchemeByIdComponent)
           },
           {
             path: 'loan-schemes/:loanSchemeId',
-            data: {roles: [UserRole.BANK]},
             loadComponent: () =>
               import('./components/loan-schemes/loan-scheme-by-id/loan-scheme-by-id.component')
                 .then(c => c.LoanSchemeByIdComponent)
@@ -199,7 +260,7 @@ export const routes: Routes = [
           },
           {
             path: 'application/:applicationId',
-            loadComponent: () => 
+            loadComponent: () =>
               import('./components/application/application-by-id/application-by-id.component')
                 .then(c => c.ApplicationByIdComponent)
           },

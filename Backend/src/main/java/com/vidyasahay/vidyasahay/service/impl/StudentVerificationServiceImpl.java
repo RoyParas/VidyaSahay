@@ -24,9 +24,7 @@ public class StudentVerificationServiceImpl implements StudentVerificationServic
 
     @Override
     @Transactional
-    public void updateStatus(
-            UUID studentId,
-            UpdateStudentVerificationRequest request) {
+    public void updateStatus(UUID studentId, UpdateStudentVerificationRequest request) {
 
         StudentVerification verification = studentVerificationRepository
                 .findByStudentId(studentId)

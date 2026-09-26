@@ -38,7 +38,7 @@ class JwtTokenProviderTest {
     private CustomUserPrincipal principal() {
         return new CustomUserPrincipal(
                 UUID.randomUUID(), "Jane", "Doe", "jane@example.com",
-                "hashed-password", RoleName.STUDENT, true, false
+                "hashed-password", RoleName.STUDENT, true, false,true
         );
     }
 

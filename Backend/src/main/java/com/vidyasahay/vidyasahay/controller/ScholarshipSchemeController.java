@@ -4,6 +4,8 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
+import jakarta.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,6 +41,12 @@ public class ScholarshipSchemeController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/active")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<List<ScholarshipSchemeSummaryResponseDTO>> getActiveScholarshipSchemes() {
+        return ResponseEntity.ok(scholarshipSchemeService.getActiveScholarshipSchemes());
+    }
     
     @GetMapping("/{scholarshipSchemeId}")
     @PreAuthorize("hasAnyRole('ADMIN','GOVERNMENT','STUDENT')")
@@ -61,7 +69,7 @@ public class ScholarshipSchemeController {
     
     @PostMapping
     @PreAuthorize("hasRole('GOVERNMENT')")
-    public ResponseEntity<Void> createScholarshipScheme(@RequestBody CreateScholarshipSchemeRequestDTO request) {
+    public ResponseEntity<Void> createScholarshipScheme(@Valid @RequestBody CreateScholarshipSchemeRequestDTO request) {
 
         UUID schemeId = scholarshipSchemeService.createScholarshipScheme(request);
 
@@ -73,7 +81,7 @@ public class ScholarshipSchemeController {
     @PreAuthorize("hasRole('GOVERNMENT')")
     public ResponseEntity<Void> updateScholarshipScheme(
             @PathVariable UUID scholarshipSchemeId,
-            @RequestBody UpdateScholarshipSchemeRequestDTO request) {
+            @Valid @RequestBody UpdateScholarshipSchemeRequestDTO request) {
 
         scholarshipSchemeService.updateScholarshipScheme(scholarshipSchemeId,request);
 

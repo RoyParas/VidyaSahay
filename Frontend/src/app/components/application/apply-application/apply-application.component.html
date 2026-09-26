@@ -1,0 +1,116 @@
+<main class="application-page">
+  <section class="application-card">
+    <a class="back-link" [routerLink]="resubmissionId ? ['/application', resubmissionId] : (applicationType === 'LOAN' ? '/loan-schemes/eligible' : '/scholarship-schemes/eligible')">{{ resubmissionId ? 'Back to application' : 'Back to eligible schemes' }}</a>
+    <p class="eyebrow">Application wizard</p>
+    <h1>{{ resubmissionId ? 'Resubmit application' : title }}</h1>
+    <p class="intro" *ngIf="resubmissionId">Review the read-only reviewer remarks, update application details if needed, upload every required document, and submit again.</p>
+    <p class="intro" *ngIf="scheme">Applying to <strong>{{ loanScheme?.schemeName || scholarshipScheme?.scholarshipName }}</strong></p>
+
+    <div class="state" *ngIf="loading">Loading your profile and scheme requirements…</div>
+    <div class="error-state" *ngIf="!loading && errorMessage">{{ errorMessage }} <a [routerLink]="applicationType === 'LOAN' ? '/loan-schemes/eligible' : '/scholarship-schemes/eligible'">Return to eligible schemes</a></div>
+
+    <ng-container *ngIf="!loading && !errorMessage && profile && scheme">
+      <nav class="wizard-steps" aria-label="Application steps">
+        <div *ngFor="let label of steps; let index = index" [class.current]="step === index" [class.complete]="step > index">
+          <span>{{ index + 1 }}</span><small>{{ label }}</small>
+        </div>
+      </nav>
+
+      <section class="wizard-panel" *ngIf="step === 0">
+        <h2>Personal and academic profile</h2>
+        <p class="section-intro">These details come from your profile and cannot be changed here. Update your profile first if anything is incorrect.</p>
+        <div class="readonly-grid">
+          <div><span>Full name</span><strong>{{ profile.firstName }} {{ profile.lastName }}</strong></div>
+          <div><span>Email</span><strong>{{ profile.email }}</strong></div>
+          <div><span>Mobile</span><strong>{{ profile.mobile }}</strong></div>
+          <div><span>Date of birth</span><strong>{{ profile.dateOfBirth | date:'dd MMM yyyy' }}</strong></div>
+          <div><span>Institute</span><strong>{{ profile.institute }}</strong></div>
+          <div><span>Course</span><strong>{{ profile.course }}</strong></div>
+          <div><span>Category</span><strong>{{ profile.category }}</strong></div>
+          <div><span>Annual family income</span><strong>{{ profile.annualFamilyIncome | currency:'INR':'symbol':'1.0-2' }}</strong></div>
+          <div class="full"><span>Address</span><strong>{{ profile.location }}, {{ profile.address?.city }}, {{ profile.address?.district }}, {{ profile.address?.state }} - {{ profile.pincode }}</strong></div>
+        </div>
+      </section>
+
+      <form class="wizard-panel" *ngIf="step === 1" [formGroup]="form" novalidate>
+        <h2>Application details</h2>
+        <p class="section-intro">Enter the details required for this application.</p>
+        <div class="form-grid" *ngIf="loanScheme">
+          <label>Requested loan amount
+            <input type="number" min="{{ loanScheme.minAmount }}" max="{{ loanScheme.maxAmount }}" step="0.01" formControlName="requestedLoanAmount" [attr.aria-invalid]="isInvalid('requestedLoanAmount')">
+            <small>Allowed range: {{ loanScheme.minAmount | currency:'INR':'symbol':'1.0-2' }} to {{ loanScheme.maxAmount | currency:'INR':'symbol':'1.0-2' }}</small>
+            <em *ngIf="isInvalid('requestedLoanAmount')">Enter an amount within this scheme's range.</em>
+          </label>
+          <label>Repayment tenure (years)
+            <input type="number" min="{{ loanScheme.minTenureForRepayment }}" max="{{ loanScheme.maxTenureForRepayment }}" formControlName="repaymentTenureYears" [attr.aria-invalid]="isInvalid('repaymentTenureYears')">
+            <small>Allowed range: {{ loanScheme.minTenureForRepayment }}–{{ loanScheme.maxTenureForRepayment }} years</small>
+            <em *ngIf="isInvalid('repaymentTenureYears')">Enter a tenure within the allowed range.</em>
+          </label>
+          <label class="full">Purpose of loan
+            <textarea rows="3" maxlength="500" formControlName="loanPurpose" [attr.aria-invalid]="isInvalid('loanPurpose')"></textarea>
+            <em *ngIf="isInvalid('loanPurpose')">A purpose of up to 500 characters is required.</em>
+          </label>
+          <ng-container *ngIf="loanScheme.coBorrowerRequired">
+            <label>Co-borrower's name<input maxlength="150" formControlName="coBorrowerName" [attr.aria-invalid]="isInvalid('coBorrowerName')"><em *ngIf="isInvalid('coBorrowerName')">Enter the co-borrower's name.</em></label>
+            <label>Co-borrower's annual income (₹)<input type="number" min="0" step="0.01" formControlName="coBorrowerIncome" [attr.aria-invalid]="isInvalid('coBorrowerIncome')"><em *ngIf="isInvalid('coBorrowerIncome')">Enter a non-negative income.</em></label>
+          </ng-container>
+        </div>
+        <div class="form-grid" *ngIf="scholarshipScheme">
+          <label>Academic percentage
+            <input type="number" min="{{ scholarshipScheme.minPercentageCriteria }}" max="100" step="0.01" formControlName="academicPercentage" [attr.aria-invalid]="isInvalid('academicPercentage')">
+            <small>Minimum required: {{ scholarshipScheme.minPercentageCriteria }}%</small>
+            <em *ngIf="isInvalid('academicPercentage')">Enter a percentage from the scheme minimum to 100.</em>
+          </label>
+          <div class="profile-value"><span>Annual family income from profile</span><strong>{{ profile.annualFamilyIncome | currency:'INR':'symbol':'1.0-2' }}</strong></div>
+        </div>
+      </form>
+
+      <section class="wizard-panel" *ngIf="step === 2">
+        <h2>Required documents</h2>
+        <p class="section-intro">Upload one file for each document requested by the scheme. Accepted formats: PDF, JPG, JPEG, and PNG; maximum 5 MB per file.</p>
+        <div class="document-list" *ngIf="documentRequirements.length; else noRequiredDocuments">
+          <label class="document-upload" *ngFor="let document of documentRequirements">
+            <span class="document-title">{{ document.name }} <b>*</b></span>
+            <span class="document-description">{{ document.description || 'Upload a clear, readable copy.' }}</span>
+            <input type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" (change)="onFileSelected(document.documentTypeId, $event)">
+            <small *ngIf="selectedFiles[document.documentTypeId] as file">Selected: {{ file.name }} ({{ (file.size / 1024 / 1024) | number:'1.0-2' }} MB)</small>
+          </label>
+        </div>
+        <ng-template #noRequiredDocuments><p class="empty-docs">This scheme does not require document uploads.</p></ng-template>
+      </section>
+
+      <section class="wizard-panel" *ngIf="step === 3">
+        <h2>Review your application</h2>
+        <div class="review-grid">
+          <div><span>Applicant</span><strong>{{ profile.firstName }} {{ profile.lastName }}</strong></div>
+          <div><span>Scheme</span><strong>{{ loanScheme?.schemeName || scholarshipScheme?.scholarshipName }}</strong></div>
+          <ng-container *ngIf="loanScheme">
+            <div><span>Requested amount</span><strong>{{ form.controls.requestedLoanAmount.value | currency:'INR':'symbol':'1.0-2' }}</strong></div>
+            <div><span>Repayment tenure</span><strong>{{ form.controls.repaymentTenureYears.value }} years</strong></div>
+            <div class="full"><span>Purpose</span><strong>{{ form.controls.loanPurpose.value }}</strong></div>
+            <div *ngIf="loanScheme.coBorrowerRequired"><span>Co-borrower</span><strong>{{ form.controls.coBorrowerName.value }} · {{ form.controls.coBorrowerIncome.value | currency:'INR':'symbol':'1.0-2' }} annual income</strong></div>
+          </ng-container>
+          <ng-container *ngIf="scholarshipScheme">
+            <div><span>Academic percentage</span><strong>{{ form.controls.academicPercentage.value }}%</strong></div>
+            <div><span>Annual family income</span><strong>{{ profile.annualFamilyIncome | currency:'INR':'symbol':'1.0-2' }}</strong></div>
+          </ng-container>
+          <div class="full"><span>Documents</span><strong>{{ documentRequirements.length }} required document(s) attached</strong></div>
+        </div>
+      </section>
+
+      <section class="wizard-panel submit-panel" *ngIf="step === 4">
+        <span class="submit-check">✓</span>
+        <h2>Ready to submit?</h2>
+        <p>Review the information and documents above. Submitting sends your application for review.</p>
+        <p class="verified-note">Institute verification: <strong>Verified</strong></p>
+      </section>
+
+      <footer class="wizard-actions">
+        <button type="button" class="secondary-button" (click)="previous()" [disabled]="step === 0 || submitting">Previous</button>
+        <button type="button" class="primary-button" (click)="next()" [disabled]="submitting">
+          {{ submitting ? 'Submitting…' : step === 4 ? 'Submit application' : step === 3 ? 'Continue to submit' : 'Continue' }}
+        </button>
+      </footer>
+    </ng-container>
+  </section>
+</main>

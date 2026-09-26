@@ -16,6 +16,7 @@ public record InstituteDetailedResponse(
         @NotBlank String lastName,
         @NotBlank @Email String email,
         @NotBlank String mobile,
+        @NotBlank boolean status,
         @NotBlank String instituteName,
         @NotNull @Valid AddressResponse address,
         String location,

@@ -1,27 +1,33 @@
 <section class="eligibility-page">
   <header class="page-heading">
-    <div><p class="eyebrow">Find a match</p><h1>Eligible scholarship schemes</h1><p>Enter your annual family income and academic percentage to check available scholarships.</p></div>
+    <div><p class="eyebrow">Find a match</p><h1>Eligible scholarship schemes</h1><p>Your profile income and academic percentage are checked against each scheme.</p></div>
   </header>
 
   <form class="eligibility-card" [formGroup]="form" (ngSubmit)="checkEligibility()" novalidate>
     <div class="eligibility-copy"><h2>Check your eligibility</h2><p>Results are also matched to the category and course on your student profile.</p></div>
     <div class="form-fields">
-      <label class="amount-field" for="annualFamilyIncome"><span>Annual family income <span class="required">*</span></span>
+      <label class="amount-field" for="annualFamilyIncome"><span>Annual family income (from profile)</span>
         <span class="input-wrap"><span aria-hidden="true">₹</span><input id="annualFamilyIncome" type="number" inputmode="decimal" min="0" step="0.01" placeholder="e.g. 300000" formControlName="annualFamilyIncome" [class.invalid]="fieldInvalid('annualFamilyIncome')"></span>
-        <small *ngIf="fieldInvalid('annualFamilyIncome')">Enter a non-negative income amount.</small>
+        <small>Update this value on your profile if it has changed.</small>
       </label>
       <label class="amount-field" for="academicPercentage"><span>Academic percentage <span class="required">*</span></span>
         <span class="input-wrap"><input id="academicPercentage" type="number" inputmode="decimal" min="0" max="100" step="0.01" placeholder="e.g. 82.5" formControlName="academicPercentage" [class.invalid]="fieldInvalid('academicPercentage')"><span aria-hidden="true">%</span></span>
         <small *ngIf="fieldInvalid('academicPercentage')">Enter a percentage from 0 to 100.</small>
       </label>
     </div>
-    <div class="form-actions"><button class="btn btn-primary" type="submit" [disabled]="checking">{{ checking ? 'Checking...' : 'Check eligibility' }}</button><button *ngIf="checked" class="btn btn-secondary" type="button" (click)="resetEligibility()">Show all schemes</button></div>
+    <div class="form-actions"><button class="btn btn-primary" type="submit" [disabled]="checking || profileLoading">{{ checking ? 'Checking...' : 'Check eligibility and apply' }}</button><button *ngIf="checked" class="btn btn-secondary" type="button" (click)="resetEligibility()">Show all schemes</button></div>
   </form>
 
-  <app-common-table [title]="checked ? 'Eligible scholarship schemes' : 'All scholarship schemes'"
+  <app-common-table
+    [title]="checked ? 'Eligible scholarship schemes' : 'All scholarship schemes'"
     [subtitle]="checked ? 'Schemes matching your details and student profile.' : 'Check eligibility to narrow this list to schemes that match your details.'"
-    [columns]="columns" [rows]="rows" [loading]="loading"
+    [columns]="columns"
+    [rows]="rows"
+    [loading]="loading"
     [emptyTitle]="errorMessage ? (checked ? 'No eligible schemes found' : 'Unable to load schemes') : (checked ? 'No eligible schemes found' : 'No scholarship schemes found')"
-    [emptyMessage]="errorMessage || (checked ? 'Try updated details or check your profile information.' : 'There are no scholarship schemes to display.')" [showIndex]="true">
+    [emptyMessage]="errorMessage || (checked ? 'Try updated details or check your profile information.' : 'There are no scholarship schemes to display.')"
+    [showIndex]="true"
+    (rowClick)="onRowClick($event)"
+  >
   </app-common-table>
 </section>

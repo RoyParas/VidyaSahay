@@ -43,6 +43,12 @@ public class LoanSchemeController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/active")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<List<LoanSchemeSummaryResponseDTO>> getActiveLoanSchemes() {
+        return ResponseEntity.ok(loanSchemeService.getActiveLoanSchemes());
+    }
+
     @PostMapping("/eligible")
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<List<LoanSchemeSummaryResponseDTO>>

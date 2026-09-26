@@ -35,11 +35,9 @@ public class InstituteServiceImpl implements InstituteService {
     /** Temporary password handed to a newly created institute. */
     private static final String TEMPORARY_PASSWORD = "Abc@1234";
 
-    private static final Pattern PASSWORD_PATTERN = Pattern.compile(
-            "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[@#*!]).{8,}$");
+    private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[@#*!]).{8,}$");
 
-    private static final Pattern EMAIL_PATTERN = Pattern.compile(
-            "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
 
     private static final Pattern MOBILE_PATTERN = Pattern.compile("^[6-9][0-9]{9}$");
 
@@ -190,6 +188,9 @@ public class InstituteServiceImpl implements InstituteService {
         user.setLastName(request.lastName().trim());
         user.setEmail(email);
         user.setMobile(mobile);
+        if (request.status() != null) {
+            user.setActive(request.status());
+        }
         userRepository.save(user);
 
         institute.setName(instituteName);
@@ -302,6 +303,7 @@ public class InstituteServiceImpl implements InstituteService {
                 user.getLastName(),
                 user.getEmail(),
                 user.getMobile(),
+                user.isActive(),
                 institute.getName(),
                 addressResponse,
                 institute.getLocation(),

@@ -16,6 +16,10 @@ export class ScholarshipSchemeService {
     return this.http.get<ScholarshipSchemeSummary[]>(`${this.API_URL}/all`);
   }
 
+  getActiveScholarshipSchemes(): Observable<ScholarshipSchemeSummary[]> {
+    return this.http.get<ScholarshipSchemeSummary[]>(`${this.API_URL}/active`);
+  }
+
   getEligibleScholarshipSchemes(annualFamilyIncome: number, academicPercentage: number): Observable<ScholarshipSchemeSummary[]> {
     return this.http.post<ScholarshipSchemeSummary[]>(`${this.API_URL}/eligible`, { annualFamilyIncome, academicPercentage });
   }
@@ -26,6 +30,10 @@ export class ScholarshipSchemeService {
 
   createScholarshipScheme(request: Record<string, unknown>): Observable<void> {
     return this.http.post<void>(this.API_URL, request);
+  }
+
+  updateScholarshipScheme(scholarshipSchemeId: string, request: Record<string, unknown>): Observable<void> {
+    return this.http.patch<void>(`${this.API_URL}/${encodeURIComponent(scholarshipSchemeId)}`, request);
   }
 
   getScholarshipSchemeById(scholarshipSchemeId: string): Observable<ScholarshipSchemeDetails> {

@@ -1,7 +1,7 @@
 <main class="scheme-page">
   <header class="page-heading">
-    <div><p class="eyebrow">GOVERNMENT PORTAL · SCHEME SETUP</p><h1>Create a scholarship scheme</h1><p>Set the scholarship, eligibility requirements and award details.</p></div>
-    <span class="secure-note">Draft is submitted when you finish</span>
+    <div><p class="eyebrow">GOVERNMENT PORTAL · SCHEME SETUP</p><h1>{{ isEditMode ? 'Update scholarship scheme' : 'Create a scholarship scheme' }}</h1><p>Set the scholarship, eligibility requirements and award details.</p></div>
+    <span class="secure-note">{{ isEditMode ? 'Changes are saved to this scheme' : 'Draft is submitted when you finish' }}</span>
   </header>
 
   <nav class="wizard-steps" aria-label="Form progress">
@@ -21,8 +21,8 @@
           <label class="field full"><span>Scheme name <b>*</b></span><input formControlName="schemeName" maxlength="200" placeholder="e.g. National Merit Scholarship"><small>Up to 200 characters.</small>@if (isInvalid('schemeName')) { <em>Enter a scheme name.</em> }</label>
           <label class="field"><span>Scholarship type <b>*</b></span><select formControlName="scholarshipType"><option value="">Choose a type</option>@for (type of scholarshipTypes; track type) { <option [value]="type">{{ type === 'MERIT_BASED' ? 'Merit based' : 'Category based' }}</option> }</select>@if (isInvalid('scholarshipType')) { <em>Select a scholarship type.</em> }</label>
           <label class="field"><span>Academic year <b>*</b></span><input formControlName="academicYear" placeholder="2026-2027" maxlength="9"><small>Use the format YYYY-YYYY.</small>@if (isInvalid('academicYear')) { <em>Enter an academic year like 2026-2027.</em> }</label>
-          <label class="field"><span>Start date <b>*</b></span><input type="date" formControlName="startDate">@if (isInvalid('startDate')) { <em>Choose a start date.</em> }</label>
-          <label class="field"><span>End date <b>*</b></span><input type="date" formControlName="endDate">@if (isInvalid('endDate')) { <em>{{ form.get('endDate')?.hasError('dateOrder') ? 'End date must be on or after the start date.' : 'Choose an end date.' }}</em> }</label>
+          <label class="field"><span>Start date <b>*</b></span><input type="date" formControlName="startDate" [min]="isEditMode ? null : minDate">@if (isInvalid('startDate')) { <em>{{ form.get('startDate')?.hasError('pastDate') ? 'Start date must be today or later.' : 'Choose a start date.' }}</em> }</label>
+          <label class="field"><span>End date <b>*</b></span><input type="date" formControlName="endDate" [min]="endDateMin">@if (isInvalid('endDate')) { <em>{{ form.get('endDate')?.hasError('dateOrder') ? 'End date must be after the start date.' : 'Choose an end date.' }}</em> }</label>
         </div>
       </section>
     }
@@ -51,10 +51,11 @@
       <section class="form-card" aria-labelledby="step-title">
         <div class="section-heading"><span class="section-icon">03</span><div><h2 id="step-title">Award and budget</h2><p>Set the award amount, payment schedule and overall scheme budget.</p></div></div>
         <div class="field-grid">
-          <label class="field"><span>Scholarship amount <b>*</b></span><input type="number" min="0.01" [max]="form.controls.amountType.value === 'PERCENTAGE_OF_FEES' ? 100 : null" step="0.01" formControlName="scholarshipAmount" placeholder="0.00">@if (isInvalid('scholarshipAmount')) { <em>{{ form.controls.scholarshipAmount.hasError('percentage') ? 'Percentage of fees must not exceed 100%.' : 'Enter an amount greater than zero.' }}</em> }</label>
           <label class="field"><span>Amount type <b>*</b></span><select formControlName="amountType"><option value="">Choose amount type</option>@for (type of amountTypes; track type) { <option [value]="type">{{ type === 'FIXED_AMOUNT' ? 'Fixed amount' : 'Percentage of fees' }}</option> }</select>@if (isInvalid('amountType')) { <em>Select an amount type.</em> }</label>
+          <label class="field"><span>{{ form.controls.amountType.value === 'PERCENTAGE_OF_FEES' ? 'Percentage of Fees(%)' : 'Scholarship amount (₹)' }} <b>*</b></span><input type="number" min="0.01" [max]="form.controls.amountType.value === 'PERCENTAGE_OF_FEES' ? 100 : null" step="0.01" formControlName="scholarshipAmount" placeholder="0.00">@if (isInvalid('scholarshipAmount')) { <em>{{ form.controls.scholarshipAmount.hasError('percentage') ? 'Percentage of fees must not exceed 100%.' : 'Enter an amount greater than zero.' }}</em> }</label>
           <label class="field"><span>Payment frequency <b>*</b></span><select formControlName="paymentFrequency"><option value="">Choose frequency</option>@for (frequency of paymentFrequencies; track frequency) { <option [value]="frequency">{{ frequency.replace('_', ' ') | titlecase }}</option> }</select>@if (isInvalid('paymentFrequency')) { <em>Select a payment frequency.</em> }</label>
           <label class="field"><span>Total scheme budget (₹) <b>*</b></span><input type="number" min="0.01" step="0.01" formControlName="totalSchemeBudget" placeholder="0.00">@if (isInvalid('totalSchemeBudget')) { <em>Enter a budget greater than zero.</em> }</label>
+          @if (isEditMode) { <label class="field"><span>Scheme status <b>*</b></span><select formControlName="status">@for (status of schemeStatuses; track status) { <option [value]="status">{{ status === 'ACTIVE' ? 'Active' : 'Inactive' }}</option> }</select></label> }
         </div>
         <aside class="review-note"><strong>Ready to submit?</strong><span>Creating this scheme will make it available to eligible applicants for the dates entered above.</span></aside>
       </section>
@@ -64,7 +65,7 @@
       <button type="button" class="button secondary" (click)="back()" [disabled]="step === 0">Back</button>
       <span class="step-count">Step {{ step + 1 }} of {{ steps.length }}</span>
       @if (step < steps.length - 1) { <button type="button" class="button primary" (click)="next()" [disabled]="loadingOptions || !!loadError">Continue <span aria-hidden="true">→</span></button> }
-      @else { <button type="submit" class="button primary" [disabled]="submitting || loadingOptions || !!loadError">{{ submitting ? 'Creating…' : 'Create scholarship scheme' }}</button> }
+      @else { <button type="submit" class="button primary" [disabled]="submitting || loadingOptions || !!loadError">{{ submitting ? (isEditMode ? 'Saving…' : 'Creating…') : (isEditMode ? 'Save changes' : 'Create scholarship scheme') }}</button> }
     </footer>
   </form>
 </main>

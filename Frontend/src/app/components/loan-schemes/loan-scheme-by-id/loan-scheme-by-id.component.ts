@@ -1,11 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
 
 import { LoanSchemeService } from '../../../core/services/loan-scheme.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { LoanSchemeDetails } from '../../../core/models/loan-scheme-detailed.model';
+import { AuthService } from '../../../core/services/auth.service';
+import { UserRole } from '../../../core/enums/user-role.enum';
+import { StudentService } from '../../../core/services/student.service';
 
 @Component({
   selector: 'app-loan-scheme-by-id',
@@ -17,14 +21,29 @@ import { LoanSchemeDetails } from '../../../core/models/loan-scheme-detailed.mod
 export class LoanSchemeByIdComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly loanSchemeService = inject(LoanSchemeService);
+  private readonly authService = inject(AuthService);
   private readonly toastService = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
+  private readonly studentService = inject(StudentService);
 
   loanScheme: LoanSchemeDetails | null = null;
   loanSchemeId = '';
+  canUpdate = false;
+  canApply = false;
 
   loading = true;
   errorMessage = '';
+
+  get isStudent() : boolean {
+    return this.authService.getRole() === UserRole.STUDENT;
+  }
+
+  get schemeListRoute(): string {
+    return this.authService.getRole() === UserRole.BANK
+      ? '/loan-schemes-created-by-me'
+      : this.isStudent ? '/loan-schemes/eligible' : '/loan-schemes';
+  }
 
   ngOnInit(): void {
     const loanSchemeId =
@@ -62,6 +81,15 @@ export class LoanSchemeByIdComponent implements OnInit {
         next: (loanScheme) => {
           this.loanScheme = loanScheme;
           this.loading = false;
+          this.checkApplicationEligibility();
+          if (this.authService.getRole() === UserRole.BANK) {
+            this.loanSchemeService.getLoanSchemesCreatedByMe()
+              .pipe(takeUntilDestroyed(this.destroyRef))
+              .subscribe({
+                next: schemes => this.canUpdate = schemes.some(scheme => scheme.loanSchemeId === this.loanSchemeId),
+                error: () => this.canUpdate = false
+              });
+          }
         },
         error: (error: unknown) => {
           this.loading = false;
@@ -73,6 +101,29 @@ export class LoanSchemeByIdComponent implements OnInit {
           );
         },
       });
+  }
+
+  private checkApplicationEligibility(): void {
+    if (!this.isStudent || this.route.snapshot.queryParamMap.get('eligible') !== 'true') return;
+    const amount = Number(this.route.snapshot.queryParamMap.get('requestedLoanAmount'));
+    if (!Number.isFinite(amount) || amount <= 0) return;
+    forkJoin({
+      profile: this.studentService.getMyProfile(),
+      eligibleSchemes: this.loanSchemeService.getEligibleLoanSchemes(amount)
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: ({ profile, eligibleSchemes }) => {
+        this.canApply = profile.verificationStatus === 'VERIFIED'
+          && eligibleSchemes.some(scheme => scheme.loanSchemeId === this.loanSchemeId);
+      },
+      error: () => this.canApply = false
+    });
+  }
+
+  applyForScheme(): void {
+    if (!this.canApply) return;
+    this.router.navigate(['/applications/apply/LOAN', this.loanSchemeId], {
+      queryParams: { requestedLoanAmount: this.route.snapshot.queryParamMap.get('requestedLoanAmount') }
+    });
   }
 
   formatEnumValue(value: string | null | undefined): string {

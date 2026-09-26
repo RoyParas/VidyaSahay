@@ -5,7 +5,7 @@
   [rows]="rows"
   [loading]="loading"
   [emptyTitle]="errorMessage ? 'Unable to load students' : 'No students found'"
-  [emptyMessage]="errorMessage || (title === 'My Students' ? 'No students are enrolled at your institute yet.' : 'There are no student profiles to display.')"
+  [emptyMessage]="errorMessage || (title === 'My Students' ? 'No students are enrolled at your institute yet.' : 'There are no registered student accounts to display.')"
   [showIndex]="true"
   (rowClick)="onRowClick($event)"
 ></app-common-table>

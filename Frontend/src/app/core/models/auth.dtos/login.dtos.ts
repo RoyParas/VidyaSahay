@@ -17,5 +17,6 @@ export interface AuthenticatedUserResponse {
   lastName: string,
   email: string,
   role: UserRole,
-  mustChangePassword: boolean
+  mustChangePassword: boolean,
+  profileCompleted: boolean
 }

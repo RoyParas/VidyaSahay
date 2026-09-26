@@ -7,6 +7,7 @@ import { CommonTableColumn, CommonTableComponent } from '../../../shared/common-
 import { LoanSchemeSummary } from '../../../core/models/summaryResponse.dto';
 import { LoanSchemeService } from '../../../core/services/loan-scheme.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-eligible-loans',
@@ -18,6 +19,7 @@ import { ToastService } from '../../../core/services/toast.service';
 export class EligibleLoansComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly loanService = inject(LoanSchemeService);
+  private readonly router = inject(Router)
   private readonly toast = inject(ToastService);
 
   rows: LoanSchemeSummary[] = [];
@@ -37,13 +39,13 @@ export class EligibleLoansComponent implements OnInit {
     { key: 'status', label: 'Status', type: 'badge', badgeMap: { active: 'vs-badge-verified', approved: 'vs-badge-verified', inactive: 'vs-badge-neutral', pending: 'vs-badge-pending' } },
   ];
 
-  ngOnInit(): void { 
-    this.loadAll(); 
+  ngOnInit(): void {
+    this.loadAll();
   }
 
   loadAll(): void {
     this.loading = true;
-    this.loanService.getLoanSchemes().pipe(finalize(() => this.loading = false)).subscribe({
+    this.loanService.getActiveLoanSchemes().pipe(finalize(() => this.loading = false)).subscribe({
       next: rows => { this.rows = rows; this.errorMessage = ''; },
       error: () => { this.rows = []; this.errorMessage = 'Could not load loan schemes. Please try again.'; },
     });
@@ -82,6 +84,15 @@ export class EligibleLoansComponent implements OnInit {
     this.submitted = false;
     this.form.reset();
     this.loadAll();
+  }
+
+  onRowClick(row: Record<string, unknown>): void {
+    const loanSchemeId = row['loanSchemeId'] as string;
+    if (!loanSchemeId) return;
+    const amount = Number(this.form.controls.requiredLoanAmount.value);
+    this.router.navigate(['/loan-schemes', loanSchemeId], {
+      queryParams: this.checked && amount > 0 ? { eligible: 'true', requestedLoanAmount: amount } : {}
+    });
   }
 
   private apiError(error: HttpErrorResponse, fallback: string): string {

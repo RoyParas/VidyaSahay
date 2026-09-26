@@ -26,6 +26,7 @@ import {
 import {
   ActivatedRoute
 } from '@angular/router';
+import { RouterLink } from '@angular/router';
 
 import {
   Subject,
@@ -45,13 +46,17 @@ import {
   DocumentStatusRequest,
   DocumentVerificationStatus
 } from '../../../core/models/application-by-id.models';
+import { AuthService } from '../../../core/services/auth.service';
+import { UserRole } from '../../../core/enums/user-role.enum';
+import { VerificationStatus } from '../../../core/enums/verification-status.enum';
 
 @Component({
   selector: 'app-application-by-id',
   standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    RouterLink
   ],
   templateUrl: './application-by-id.component.html',
   styleUrls: ['./application-by-id.component.css'],
@@ -83,6 +88,7 @@ export class ApplicationByIdComponent
   constructor(
     private readonly route: ActivatedRoute,
     private readonly applicationService: ApplicationByIdService,
+    private readonly authService: AuthService,
     private readonly formBuilder: FormBuilder,
     private readonly location: Location,
     private readonly changeDetectorRef: ChangeDetectorRef
@@ -98,6 +104,27 @@ export class ApplicationByIdComponent
       ],
       approvedAmount: [null]
     });
+  }
+
+  get canReviewApplications(): boolean {
+    const role = this.authService.getRole();
+    return role === UserRole.BANK || role === UserRole.GOVERNMENT;
+  }
+
+  get isStudent(): boolean {
+    return this.authService.getRole() === UserRole.STUDENT;
+  }
+
+  get canUpdateDecision(): boolean {
+    const status = this.application?.applicationSummary.status;
+    return this.canReviewApplications && (status === 'SUBMITTED' || status === 'UNDER_REVIEW');
+  }
+
+  get canViewDocuments() : boolean {
+    const role = this.authService.getRole();
+    return role === UserRole.STUDENT
+      || role === UserRole.BANK
+      || role === UserRole.GOVERNMENT;
   }
 
   ngOnInit(): void {
@@ -203,6 +230,14 @@ export class ApplicationByIdComponent
     );
   }
 
+  isDocumentNotVerified(documentId: string) : boolean {
+    const document : ApplicationDocument | undefined = this.application?.documents.find(documentItem => documentItem.id === documentId);
+
+    if(!document) return false;
+
+    else return document.verificationStatus !== VerificationStatus.VERIFIED;
+  }
+
   get documentVerificationLabel(): string {
     const totalDocuments =
       this.application?.documents.length ?? 0;
@@ -253,7 +288,8 @@ export class ApplicationByIdComponent
         next: response => {
           this.application = {
             ...response,
-            documents: response.documents ?? []
+            documents: response.documents ?? [],
+            history: response.history ?? []
           };
 
           this.changeDetectorRef.markForCheck();
@@ -778,7 +814,11 @@ export class ApplicationByIdComponent
 
       case 'UNDER_REVIEW':
       case 'IN_REVIEW':
+      case 'SUBMITTED':
         return 'badge-review';
+
+      case 'REVERTED':
+        return 'badge-reverted';
 
       default:
         return 'badge-neutral';
@@ -793,8 +833,8 @@ export class ApplicationByIdComponent
       case 'REJECTED':
         return 'Submit Rejection';
 
-      case 'PENDING':
-        return 'Submit Revert';
+      case 'REVERTED':
+        return 'Return to Student';
 
       default:
         return 'Select a Decision';
@@ -811,8 +851,8 @@ export class ApplicationByIdComponent
       case 'REJECTED':
         return 'Application rejected successfully.';
 
-      case 'PENDING':
-        return 'Application reverted for review successfully.';
+      case 'REVERTED':
+        return 'Application returned to the student for updates.';
     }
   }
 

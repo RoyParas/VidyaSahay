@@ -68,7 +68,8 @@ public class AuthServiceImpl implements AuthService {
                         principal.getLastName(),
                         principal.getUsername(),
                         principal.getRole(),
-                        principal.isMustChangePassword()
+                        principal.isMustChangePassword(),
+                        principal.isProfileCompleted()
                 );
 
         return new LoginResponse(
@@ -107,6 +108,7 @@ public class AuthServiceImpl implements AuthService {
         );
 
         user.setMustChangePassword(false);
+        user.setProfileCompleted(false);
         user.setActive(true);
 
         User savedUser = userRepository.save(user);

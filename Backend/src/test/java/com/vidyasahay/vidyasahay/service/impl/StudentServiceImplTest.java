@@ -83,6 +83,7 @@ class StudentServiceImplTest {
         @DisplayName("maps every student to a summary with a masked Aadhaar number")
         void getAllStudents_success() {
             Student student = TestData.student();
+            StudentVerification studentVerification = TestData.verification(student,VerificationStatus.VERIFIED);
 
             when(studentRepository.findAllBy()).thenReturn(List.of(student));
 
@@ -91,20 +92,8 @@ class StudentServiceImplTest {
             assertThat(response).hasSize(1);
             assertThat(response.get(0).studentId()).isEqualTo(student.getId());
             assertThat(response.get(0).email()).isEqualTo(student.getUser().getEmail());
-            assertThat(response.get(0).maskedAadharNumber()).isEqualTo("XXXXXXXX9012");
             assertThat(response.get(0).courseName()).isEqualTo(student.getCourse().getName());
             assertThat(response.get(0).instituteName()).isEqualTo(student.getInstitute().getName());
-        }
-
-        @Test
-        @DisplayName("masks a null Aadhaar number to null instead of blowing up")
-        void getAllStudents_nullAadhaar() {
-            Student student = TestData.student();
-            student.setAadharNumber(null);
-
-            when(studentRepository.findAllBy()).thenReturn(List.of(student));
-
-            assertThat(studentService.getAllStudents().get(0).maskedAadharNumber()).isNull();
         }
 
         @Test

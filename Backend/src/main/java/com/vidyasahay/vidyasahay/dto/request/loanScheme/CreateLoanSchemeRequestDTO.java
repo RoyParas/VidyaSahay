@@ -45,6 +45,7 @@ public record CreateLoanSchemeRequestDTO(
         @NotNull(message = "Interest type is required")
         InterestType interestType,
 
+        @NotNull(message = "Minimum interest rate is required")
         @DecimalMin(value = "0.0000", message = "Minimum interest rate cannot be negative")
         @Digits(integer = 3, fraction = 4, message = "Minimum interest rate must have at most 3 integer digits and 4 decimal places")
         BigDecimal minInterestRate,

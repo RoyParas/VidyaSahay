@@ -36,6 +36,24 @@ public class Application extends BaseEntity {
 	@Column(name = "approved_amount", precision = 15, scale = 2)
 	private BigDecimal approvedAmount;
 
+	@Column(name = "requested_loan_amount", precision = 15, scale = 2)
+	private BigDecimal requestedLoanAmount;
+
+	@Column(name = "academic_percentage", precision = 5, scale = 2)
+	private BigDecimal academicPercentage;
+
+	@Column(name = "loan_purpose", length = 500)
+	private String loanPurpose;
+
+	@Column(name = "repayment_tenure_years")
+	private Integer repaymentTenureYears;
+
+	@Column(name = "co_borrower_name", length = 150)
+	private String coBorrowerName;
+
+	@Column(name = "co_borrower_income", precision = 15, scale = 2)
+	private BigDecimal coBorrowerIncome;
+
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false, length = 40)
 	private ApplicationStatus status;
@@ -93,6 +111,19 @@ public class Application extends BaseEntity {
 	public void setApprovedAmount(BigDecimal approvedAmount) {
 		this.approvedAmount = approvedAmount;
 	}
+
+	public BigDecimal getRequestedLoanAmount() { return requestedLoanAmount; }
+	public void setRequestedLoanAmount(BigDecimal requestedLoanAmount) { this.requestedLoanAmount = requestedLoanAmount; }
+	public BigDecimal getAcademicPercentage() { return academicPercentage; }
+	public void setAcademicPercentage(BigDecimal academicPercentage) { this.academicPercentage = academicPercentage; }
+	public String getLoanPurpose() { return loanPurpose; }
+	public void setLoanPurpose(String loanPurpose) { this.loanPurpose = loanPurpose; }
+	public Integer getRepaymentTenureYears() { return repaymentTenureYears; }
+	public void setRepaymentTenureYears(Integer repaymentTenureYears) { this.repaymentTenureYears = repaymentTenureYears; }
+	public String getCoBorrowerName() { return coBorrowerName; }
+	public void setCoBorrowerName(String coBorrowerName) { this.coBorrowerName = coBorrowerName; }
+	public BigDecimal getCoBorrowerIncome() { return coBorrowerIncome; }
+	public void setCoBorrowerIncome(BigDecimal coBorrowerIncome) { this.coBorrowerIncome = coBorrowerIncome; }
 
 	public ApplicationStatus getStatus() {
 		return status;

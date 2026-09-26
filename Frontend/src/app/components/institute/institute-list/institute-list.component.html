@@ -21,11 +21,15 @@
     [columns]="columns"
     [rows]="rows"
     [loading]="loading"
+    [actions]="rowActions"
+    [showActions]="isAdmin"
     [emptyTitle]="
       errorMessage ? 'Unable to load institutes' : 'No institutes found'
     "
     [emptyMessage]="errorMessage || 'There are no institutes to display.'"
     [showIndex]="true"
+    (rowClick)="onInstituteRowClick($event)"
+    (actionClick)="onInstituteAction($event)"
   >
   </app-common-table>
 </section>
@@ -43,28 +47,48 @@
   >
     <header class="modal-header">
       <div>
-        <p class="eyebrow">New account</p>
-        <h2 id="modal-title">Create institute</h2>
-        <p>Enter the institute contact and account details.</p>
+        <p class="eyebrow">{{ modalMode === 'create' ? 'New account' : modalMode === 'edit' ? 'Update account' : 'Institute account' }}</p>
+        <h2 id="modal-title">{{ modalMode === 'create' ? 'Create institute' : modalMode === 'edit' ? 'Update institute' : 'Institute details' }}</h2>
+        <p>{{ modalMode === 'create' ? 'Enter the institute contact and account details.' : modalMode === 'edit' ? 'Update the institute contact and profile details.' : 'Institute contact, location, and account information.' }}</p>
       </div>
       <button
         type="button"
         class="modal-close"
         aria-label="Close dialog"
         (click)="closeModal()"
-        [disabled]="creating"
+        [disabled]="creating || updating"
       >
         &#215;
       </button>
     </header>
 
-    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div *ngIf="modalLoading" class="modal-state" role="status">Loading institute details...</div>
+    <p *ngIf="modalError" class="modal-error" role="alert">{{ modalError }}</p>
+
+    <dl *ngIf="modalMode === 'view' && selectedInstitute && !modalLoading" class="detail-grid">
+      <div class="detail-item"><dt>Institute name</dt><dd>{{ selectedInstitute.instituteName }}</dd></div>
+      <div class="detail-item"><dt>Contact person</dt><dd>{{ selectedInstitute.firstName }} {{ selectedInstitute.lastName }}</dd></div>
+      <div class="detail-item"><dt>Email</dt><dd>{{ selectedInstitute.email }}</dd></div>
+      <div class="detail-item"><dt>Mobile</dt><dd>{{ selectedInstitute.mobile }}</dd></div>
+      <div class="detail-item"><dt>State</dt><dd>{{ selectedInstitute.address.state }}</dd></div>
+      <div class="detail-item"><dt>District</dt><dd>{{ selectedInstitute.address.district }}</dd></div>
+      <div class="detail-item"><dt>City</dt><dd>{{ selectedInstitute.address.city }}</dd></div>
+      <div class="detail-item"><dt>Location</dt><dd>{{ selectedInstitute.location || '-' }}</dd></div>
+      <div class="detail-item"><dt>Pincode</dt><dd>{{ selectedInstitute.pincode }}</dd></div>
+      <div class="detail-item"><dt>Bank name</dt><dd>{{ selectedInstitute.bankName || '-' }}</dd></div>
+      <div class="detail-item"><dt>Branch name</dt><dd>{{ selectedInstitute.branchName || '-' }}</dd></div>
+      <div class="detail-item"><dt>IFSC code</dt><dd>{{ selectedInstitute.ifscCode || '-' }}</dd></div>
+      <div class="detail-item"><dt>Account number</dt><dd>{{ selectedInstitute.accountNumber || '-' }}</dd></div>
+      <div class="detail-item"><dt>Status</dt><dd>{{ selectedInstitute.status ? 'Active' : 'Inactive' }}</dd></div>
+    </dl>
+
+    <form *ngIf="modalMode !== 'view' && !modalLoading && !modalError" [formGroup]="form" novalidate>
       <div class="form-section">
         <h3>Contact details</h3>
         <div class="form-grid">
           <label class="field"
-            ><span>First name <b>*</b></span
-            ><input
+            ><span>First name <b>*</b></span>
+            <input
               formControlName="firstName"
               autocomplete="given-name"
               [class.invalid]="fieldInvalid('firstName')"
@@ -122,17 +146,46 @@
             ></label
           >
           <label class="field"
-            ><span>Address record ID <b>*</b></span
-            ><input
-              formControlName="addressId"
-              placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-              [class.invalid]="fieldInvalid('addressId')"
-            /><small *ngIf="fieldInvalid('addressId')"
-              >Enter a valid address UUID.</small
-            ><small class="hint"
-              >The API currently requires an existing address ID.</small
-            ></label
-          >
+            ><span>State <b>*</b></span
+            ><select
+              formControlName="state"
+              (change)="onStateChange()"
+              [disabled]="statesLoading || states.length === 0"
+              [class.invalid]="fieldInvalid('state')"
+            >
+              <option value="">{{ statesLoading ? "Loading states..." : "Select state" }}</option>
+              <option *ngFor="let state of states" [value]="state">{{ state }}</option>
+            </select>
+            <small *ngIf="fieldInvalid('state')">Select a state.</small>
+          </label>
+          <label class="field"
+            ><span>District <b>*</b></span
+            ><select
+              formControlName="district"
+              (change)="onDistrictChange()"
+              [disabled]="!form.controls.state.value || districtsLoading || districts.length === 0"
+              [class.invalid]="fieldInvalid('district')"
+            >
+              <option value="">{{ districtsLoading ? "Loading districts..." : "Select district" }}</option>
+              <option *ngFor="let district of districts" [value]="district">{{ district }}</option>
+            </select>
+            <small *ngIf="fieldInvalid('district')">Select a district.</small>
+          </label>
+          <label class="field"
+            ><span>City <b>*</b></span
+            ><select
+              formControlName="city"
+              (change)="onCityChange()"
+              [disabled]="!form.controls.district.value || citiesLoading || cities.length === 0"
+              [class.invalid]="fieldInvalid('city')"
+            >
+              <option value="">{{ citiesLoading ? "Loading cities..." : "Select city" }}</option>
+              <option *ngFor="let city of cities" [value]="city.city">{{ city.city }}</option>
+            </select>
+            <small *ngIf="fieldInvalid('city')">Select a city.</small>
+          </label>
+          <input type="hidden" formControlName="addressId" />
+          <p *ngIf="addressOptionsError" class="address-error" role="alert">{{ addressOptionsError }}</p>
           <label class="field"
             ><span>Location</span
             ><input
@@ -205,6 +258,24 @@
         </div>
       </div>
 
+      <div *ngIf="modalMode === 'edit' && selectedInstitute" class="form-section status-section">
+        <h3>Account status</h3>
+        <div class="status-toggle">
+          <span>Status</span>
+          <button
+            type="button"
+            class="toggle-control"
+            role="switch"
+            [attr.aria-checked]="form.controls.status.value"
+            [class.is-active]="form.controls.status.value"
+            (click)="toggleStatus()"
+          >
+            <span class="toggle-track" aria-hidden="true"></span>
+            <strong>{{ form.controls.status.value ? 'Active' : 'Inactive' }}</strong>
+          </button>
+        </div>
+      </div>
+
       <footer class="modal-actions">
         <span class="required-note">* Required fields</span>
         <div>
@@ -212,15 +283,29 @@
             type="button"
             class="btn btn-secondary"
             (click)="closeModal()"
-            [disabled]="creating"
+            [disabled]="creating || updating"
           >
             Cancel
           </button>
-          <button type="submit" class="btn btn-primary" [disabled]="creating">
-            {{ creating ? "Creating..." : "Create institute" }}
+          <button
+            type="submit"
+            class="btn btn-primary"
+            (click)="modalMode === 'create' ? createInstitute() : updateInstitute()"
+            [disabled]="creating || updating || (modalMode === 'edit' && !hasChanges)"
+          >
+            {{ creating ? "Creating..." : updating ? "Saving..." : modalMode === 'create' ? "Create institute" : "Update" }}
           </button>
         </div>
       </footer>
     </form>
+
+    <footer *ngIf="modalMode === 'view' && !modalLoading && !modalError" class="modal-actions view-actions">
+      <span></span>
+      <div>
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">Close</button>
+        <button *ngIf="selectedInstitute" type="button" class="btn btn-primary" (click)="editSelectedInstitute()">Update</button>
+      </div>
+    </footer>
+    <footer *ngIf="modalError" class="modal-actions view-actions"><span></span><div><button type="button" class="btn btn-secondary" (click)="closeModal()">Close</button></div></footer>
   </section>
 </div>

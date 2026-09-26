@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.security.access.AccessDeniedException;
@@ -23,6 +24,7 @@ import com.vidyasahay.vidyasahay.enums.VerificationStatus;
 import com.vidyasahay.vidyasahay.exception.BusinessException;
 import com.vidyasahay.vidyasahay.exception.ResourceNotFoundException;
 import com.vidyasahay.vidyasahay.repository.StudentDocumentRepository;
+import com.vidyasahay.vidyasahay.repository.ApplicationDocumentRepository;
 import com.vidyasahay.vidyasahay.repository.UserRepository;
 import com.vidyasahay.vidyasahay.service.StudentDocumentService;
 
@@ -33,18 +35,28 @@ public class StudentDocumentServiceImpl implements StudentDocumentService {
 
     private final StudentDocumentRepository studentDocumentRepository;
     private final UserRepository userRepository;
+    private final ApplicationDocumentRepository applicationDocumentRepository;
 
     /** Root folder on the local disk where uploaded student documents live. */
     private final Path storageRoot;
 
+    @Autowired
     public StudentDocumentServiceImpl(
             StudentDocumentRepository studentDocumentRepository,
             UserRepository userRepository,
+            ApplicationDocumentRepository applicationDocumentRepository,
             @Value("${app.document.storage-dir:uploads/student-documents}") String storageDir) {
 
         this.studentDocumentRepository = studentDocumentRepository;
         this.userRepository = userRepository;
+        this.applicationDocumentRepository = applicationDocumentRepository;
         this.storageRoot = Paths.get(storageDir).toAbsolutePath().normalize();
+    }
+
+    /** Kept for direct unit-test construction; Spring uses the repository-aware constructor. */
+    public StudentDocumentServiceImpl(StudentDocumentRepository studentDocumentRepository,
+            UserRepository userRepository, String storageDir) {
+        this(studentDocumentRepository, userRepository, null, storageDir);
     }
 
     @Override
@@ -158,7 +170,10 @@ public class StudentDocumentServiceImpl implements StudentDocumentService {
 
             UUID ownerUserId = document.getStudent().getUser().getId();
 
-            if (!ownerUserId.equals(requesterUserId)) {
+            boolean attachedToRequestersApplication = applicationDocumentRepository != null
+                    && applicationDocumentRepository.existsByDocumentIdAndApplicationOwner(
+                            document.getId(), requesterUserId);
+            if (!ownerUserId.equals(requesterUserId) && !attachedToRequestersApplication) {
                 throw new AccessDeniedException("You are not allowed to view this document");
             }
         }

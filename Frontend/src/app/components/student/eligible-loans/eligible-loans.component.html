@@ -3,52 +3,36 @@
     <div>
       <p class="eyebrow">Find a match</p>
       <h1>Eligible loan schemes</h1>
-      <p>
-        Enter the loan amount you need to see schemes that match your profile.
-      </p>
+      <p>Enter the loan amount you need to see schemes that match your profile.</p>
     </div>
   </header>
 
-  <form
-    class="eligibility-card"
-    [formGroup]="form"
-    (ngSubmit)="checkEligibility()"
-    novalidate
-  >
+  <form class="eligibility-card" [formGroup]="form" novalidate>
     <div class="eligibility-copy">
       <h2>Check your eligibility</h2>
-      <p>
-        Loan eligibility is also matched to the profession on your student
-        profile.
-      </p>
+      <p> Loan eligibility is also matched to the profession on your student profile.</p>
     </div>
     <label class="amount-field" for="requiredLoanAmount"><span>Required loan amount <span class="required">*</span></span>
-      <span class="input-wrap"
-        ><span aria-hidden="true">₹</span
-        ><input
-          id="requiredLoanAmount"
-          type="number"
-          inputmode="decimal"
-          min="0.01"
-          step="0.01"
-          placeholder="e.g. 250000"
-          formControlName="requiredLoanAmount"
-          [class.invalid]="fieldInvalid()"
-      /></span>
-      <small *ngIf="fieldInvalid()"
-        >Enter an amount greater than zero, with up to two decimal
-        places.</small
-      >
+      <span class="input-wrap">
+        <span aria-hidden="true">₹</span>
+          <input
+            id="requiredLoanAmount"
+            type="number"
+            inputmode="decimal"
+            min="0.01"
+            step="0.01"
+            placeholder="e.g. 250000"
+            formControlName="requiredLoanAmount"
+            [class.invalid]="fieldInvalid()"
+          />
+        </span>
+      <small *ngIf="fieldInvalid()">Enter an amount greater than zero, with up to two decimal places.</small>
     </label>
     <div class="form-actions">
-      <button class="btn btn-primary" type="submit" [disabled]="checking">
-        {{ checking ? "Checking..." : "Check eligibility" }}</button
-      ><button
-        *ngIf="checked"
-        class="btn btn-secondary"
-        type="button"
-        (click)="resetEligibility()"
-      >
+      <button class="btn btn-primary" type="submit" [disabled]="checking" (click)="checkEligibility()">
+        {{ checking ? "Checking..." : "Check eligibility and apply" }}
+      </button>
+      <button *ngIf="checked" class="btn btn-secondary" type="button" (click)="resetEligibility()">
         Show all schemes
       </button>
     </div>
@@ -56,30 +40,16 @@
 
   <app-common-table
     [title]="checked ? 'Eligible loan schemes' : 'All loan schemes'"
-    [subtitle]="
-      checked
-        ? 'Schemes matching your amount and student profile.'
-        : 'Check eligibility to narrow this list to schemes that match your profile.'
-    "
+    [subtitle]="checked ? 'Schemes matching your amount and student profile.': 'Check eligibility to narrow this list to schemes that match your profile.'"
     [columns]="columns"
     [rows]="rows"
     [loading]="loading"
-    [emptyTitle]="
-      errorMessage
-        ? checked
-          ? 'No eligible schemes found'
-          : 'Unable to load schemes'
-        : checked
-          ? 'No eligible schemes found'
-          : 'No loan schemes found'
-    "
-    [emptyMessage]="
-      errorMessage ||
-      (checked
+    [emptyTitle]=" errorMessage ? checked ? 'No eligible schemes found' : 'Unable to load schemes': checked ? 'No eligible schemes found' : 'No loan schemes found'"
+    [emptyMessage]=" errorMessage || (checked
         ? 'Try a different amount or check your profile details.'
-        : 'There are no loan schemes to display.')
-    "
+        : 'There are no loan schemes to display.')"
     [showIndex]="true"
+    (rowClick)="onRowClick($event)"
   >
   </app-common-table>
 </section>

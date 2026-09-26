@@ -10,7 +10,9 @@ public record StudentSummaryResponse(
         String lastName,
         String email,
         String mobile,
-        String maskedAadharNumber,
+        VerificationStatus verificationStatus,
         String courseName,
-        String instituteName
+        String instituteName,
+        UUID userId,
+        boolean profileCompleted
 ) {}

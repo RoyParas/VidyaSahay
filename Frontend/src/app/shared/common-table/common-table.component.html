@@ -69,7 +69,7 @@
                   type="button"
                   class="vs-btn vs-btn-sm"
                   [ngClass]="getActionVariant(action.variant)"
-                  (click)="onAction(action.id, row)"
+                  (click)="onAction(action.id, row, $event)"
                 >
                   {{ action.label }}
                 </button>

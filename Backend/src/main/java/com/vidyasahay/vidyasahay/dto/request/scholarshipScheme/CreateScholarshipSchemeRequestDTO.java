@@ -2,6 +2,7 @@ package com.vidyasahay.vidyasahay.dto.request.scholarshipScheme;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.FutureOrPresent;
 import java.util.UUID;
 
 import com.vidyasahay.vidyasahay.enums.PaymentFrequency;
@@ -15,7 +16,7 @@ public record CreateScholarshipSchemeRequestDTO(
     @NotBlank String schemeName,
     @NotNull ScholarshipType scholarshipType,
     @NotBlank String academicYear,
-    @NotNull LocalDate startDate,
+    @NotNull @FutureOrPresent LocalDate startDate,
     @NotNull LocalDate endDate,
     int applierMinAge,
     int applierMaxAge,

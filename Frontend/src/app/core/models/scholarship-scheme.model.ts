@@ -11,6 +11,7 @@ export interface ScholarshipSchemeDetails {
   maxFamilyAnnualIncome: number;
   minPercentageCriteria: number;
   requiredDocuments: string[];
+  documentRequirements: import('./loan-scheme-detailed.model').SchemeDocumentRequirement[];
   eligibleProfessions: string[];
   eligibleCategories: string[];
   scholarshipAmount: number;

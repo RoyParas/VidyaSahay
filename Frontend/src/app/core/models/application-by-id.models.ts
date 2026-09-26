@@ -1,15 +1,19 @@
 export type ApplicationType = 'LOAN' | 'SCHOLARSHIP';
 
 export type ApplicationStatus =
-  | 'PENDING'
+  | 'DRAFT'
+  | 'SUBMITTED'
   | 'UNDER_REVIEW'
+  | 'REVERTED'
+  | 'PARTIALLY_DISBURSED'
+  | 'DISBURSED'
   | 'APPROVED'
   | 'REJECTED';
 
 export type DecisionStatus =
   | 'APPROVED'
   | 'REJECTED'
-  | 'PENDING';
+  | 'REVERTED';
 
 export type DocumentVerificationStatus =
   | 'PENDING'
@@ -78,9 +82,22 @@ export interface ApplicationDocument {
 
 export interface ApplicationDetailsResponse {
   applicationSummary: ApplicationSummary;
+  submissionDetails: ApplicationSubmissionDetails;
   student: StudentDetails;
   instituteName: string;
   documents: ApplicationDocument[];
+  history: ApplicationHistory[];
+}
+
+export interface ApplicationHistory {
+  historyId: string;
+  status: ApplicationStatus | string;
+  remark: string | null;
+  actionByUserId: string;
+  actionByName: string;
+  assignedToUserId: string | null;
+  assignedToName: string | null;
+  createdAt: string;
 }
 
 export interface ApplicationStatusRequest {
@@ -92,4 +109,13 @@ export interface ApplicationStatusRequest {
 
 export interface DocumentStatusRequest {
   verificationStatus: DocumentVerificationStatus;
+}
+
+export interface ApplicationSubmissionDetails {
+  requestedLoanAmount: number | null;
+  academicPercentage: number | null;
+  loanPurpose: string | null;
+  repaymentTenureYears: number | null;
+  coBorrowerName: string | null;
+  coBorrowerIncome: number | null;
 }

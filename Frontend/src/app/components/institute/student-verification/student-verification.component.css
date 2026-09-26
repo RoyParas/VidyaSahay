@@ -1,7 +1,11 @@
 .student-verification-page {
   width: 100%;
-  padding: 28px var(--container-padding) 40px;
-  background: var(--bg-main);
+  padding: 0;
+  background: transparent;
+}
+
+.student-verification-page > .information-section {
+  margin: -12px var(--container-padding) 40px;
 }
 
 .verified-status-message {

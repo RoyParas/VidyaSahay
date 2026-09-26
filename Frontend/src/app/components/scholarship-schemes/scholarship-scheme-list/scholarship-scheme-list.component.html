@@ -9,5 +9,8 @@
       : 'No scholarship schemes found'"
   [emptyMessage]="errorMessage || 'There are no scholarship schemes to display.'"
   [showIndex]="true"
+  [actions]="actions"
+  [showActions]="canUpdate"
   (rowClick)="onRowClick($event)"
+  (actionClick)="onActionClick($event)"
 ></app-common-table>

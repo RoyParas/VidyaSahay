@@ -238,8 +238,20 @@
 
     <main class="content-layout">
 
-      <!-- Main column -->
-      <div class="content-column">
+        <section class="content-card" *ngIf="application.submissionDetails as submittedDetails">
+          <div class="card-header">
+            <div><span class="section-eyebrow">Submitted form</span><h2>Application Details</h2></div>
+          </div>
+          <div class="details-grid" *ngIf="isLoanApplication">
+            <div class="detail-item"><span class="detail-label">Requested loan amount</span><strong>{{ submittedDetails.requestedLoanAmount | currency:'INR':'symbol':'1.0-2' }}</strong></div>
+            <div class="detail-item"><span class="detail-label">Repayment tenure</span><strong>{{ submittedDetails.repaymentTenureYears }} years</strong></div>
+            <div class="detail-item"><span class="detail-label">Purpose</span><strong>{{ submittedDetails.loanPurpose || '-' }}</strong></div>
+            <div class="detail-item" *ngIf="submittedDetails.coBorrowerName"><span class="detail-label">Co-borrower</span><strong>{{ submittedDetails.coBorrowerName }} · {{ submittedDetails.coBorrowerIncome | currency:'INR':'symbol':'1.0-2' }} annual income</strong></div>
+          </div>
+          <div class="details-grid" *ngIf="isScholarshipApplication">
+            <div class="detail-item"><span class="detail-label">Academic percentage</span><strong>{{ submittedDetails.academicPercentage }}%</strong></div>
+          </div>
+        </section>
 
         <!-- Personal information -->
         <section class="content-card">
@@ -574,7 +586,7 @@
         </section>
 
         <!-- Documents -->
-        <section class="content-card documents-card">
+        <section class="content-card documents-card" *ngIf="canViewDocuments">
           <div class="card-header documents-header">
             <div>
               <span class="section-eyebrow">
@@ -683,7 +695,7 @@
                   }}
                 </button>
 
-                <label class="status-select-label">
+                <label *ngIf="canReviewApplications && isDocumentNotVerified(document.id)" class="status-select-label">
                   <span class="sr-only">
                     Change verification status for
                     {{ document.documentTypeName }}
@@ -733,10 +745,38 @@
             </article>
           </div>
         </section>
-      </div>
 
-      <!-- Sidebar -->
-      <aside class="sidebar-column">
+      <!-- Application summary and review actions -->
+        <section class="content-card" *ngIf="isStudent && application.applicationSummary.status === 'REVERTED'">
+          <div class="card-header">
+            <div>
+              <span class="section-eyebrow">Action required</span>
+              <h2>Update and resubmit</h2>
+              <p>Your application was returned for updates. Review the remark below, upload the required documents, and submit again.</p>
+            </div>
+          </div>
+          <a class="resubmit-link" [routerLink]="['/applications/apply', application.applicationSummary.applicationType, application.applicationSummary.schemeId]" [queryParams]="{ resubmit: application.applicationSummary.id }">
+            Upload documents and resubmit
+          </a>
+        </section>
+
+        <section class="content-card application-history-card" *ngIf="application.history.length">
+          <div class="card-header">
+            <div>
+              <span class="section-eyebrow">Review updates</span>
+              <h2>Application remarks</h2>
+            </div>
+          </div>
+          <article class="history-entry" *ngFor="let entry of application.history">
+            <div class="history-entry-heading">
+              <strong>{{ formatStatus(entry.status) }}</strong>
+              <time [attr.datetime]="entry.createdAt">{{ entry.createdAt | date:'dd MMM yyyy, h:mm a' }}</time>
+            </div>
+            <p>{{ entry.remark || 'No remark provided.' }}</p>
+            <small>By {{ entry.actionByName || 'Application reviewer' }}</small>
+          </article>
+        </section>
+
         <section class="content-card sticky-card">
           <div class="card-header">
             <div>
@@ -841,7 +881,7 @@
         </section>
 
         <!-- Decision -->
-        <section class="content-card decision-card">
+        <section class="content-card decision-card" *ngIf="canUpdateDecision">
           <div class="card-header">
             <div>
               <span class="section-eyebrow">
@@ -908,12 +948,12 @@
                 type="button"
                 class="decision-option revert-option"
                 [class.selected]="
-                  selectedDecision === 'PENDING'
+                  selectedDecision === 'REVERTED'
                 "
                 [attr.aria-pressed]="
-                  selectedDecision === 'PENDING'
+                  selectedDecision === 'REVERTED'
                 "
-                (click)="selectDecision('PENDING')"
+                (click)="selectDecision('REVERTED')"
               >
                 <span class="decision-icon">
                   ↻
@@ -922,7 +962,7 @@
                 <span>
                   <strong>Revert</strong>
                   <small>
-                    Send application for review
+                    Return it to the student for updates
                   </small>
                 </span>
               </button>
@@ -1082,7 +1122,6 @@
             </button>
           </form>
         </section>
-      </aside>
     </main>
   </ng-container>
 </div>

@@ -24,7 +24,14 @@ export class AuthService {
           this.setStorageItem('token', response.accessToken);
           this.setStorageItem('role', response.user.role);
           this.setStorageItem('userName', `${response.user.firstName} ${response.user.lastName}`.trim());
+          this.setStorageItem('mustChangePassword', response.user.mustChangePassword);
+          this.setStorageItem('profileCompleted', response.user.profileCompleted);
         }));
+  }
+
+  changePassword(request: { currentPassword: string; newPassword: string }): Observable<{ message: string; mustChangePassword: boolean }> {
+    return this.http.put<{ message: string; mustChangePassword: boolean }>(`${this.API_URL}/change-password`, request)
+      .pipe(tap(response => this.setStorageItem('mustChangePassword', response.mustChangePassword)));
   }
 
   register(request: RegisterRequest): Observable<RegisterResponse> {
@@ -44,16 +51,35 @@ export class AuthService {
   }
 
   getDefaultRoute(): string {
+    const role = this.getRole();
+    if ((role === UserRole.BANK || role === UserRole.INSTITUTE) && this.mustChangePassword()) {
+      return '/change-password';
+    }
+    if (role === UserRole.STUDENT && !this.isStudentProfileComplete()) {
+      return '/complete-profile';
+    }
+
     const routes: Record<UserRole, string> = {
-      [UserRole.ADMIN]: '/students',
+      [UserRole.ADMIN]: '/scholarship-schemes',
       [UserRole.BANK]: '/loan-schemes-created-by-me',
       [UserRole.GOVERNMENT]: '/scholarship-schemes-created-by-me',
       [UserRole.STUDENT]: '/my-applications',
       [UserRole.INSTITUTE]: '/my-students'
     };
 
-    const role = this.getRole();
     return role ? routes[role] : '/login';
+  }
+
+  mustChangePassword(): boolean {
+    return this.getStorageItem('mustChangePassword') === 'true';
+  }
+
+  isStudentProfileComplete(): boolean {
+    return this.getStorageItem('profileCompleted') !== 'false';
+  }
+
+  setStudentProfileCompleted(completed: boolean): void {
+    this.setStorageItem('profileCompleted', completed);
   }
 
   getUserName(): string {
@@ -68,6 +94,8 @@ export class AuthService {
     this.removeStorageItem('token');
     this.removeStorageItem('role');
     this.removeStorageItem('userName');
+    this.removeStorageItem('mustChangePassword');
+    this.removeStorageItem('profileCompleted');
   }
 
   private setStorageItem(key: string, value: any): void | null {

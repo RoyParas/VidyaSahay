@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { finalize } from 'rxjs';
-import { CommonTableColumn, CommonTableComponent } from '../../../shared/common-table/common-table.component';
+import { CommonTableAction, CommonTableColumn, CommonTableComponent } from '../../../shared/common-table/common-table.component';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserRole } from '../../../core/enums/user-role.enum';
 import { LoanSchemeSummary } from '../../../core/models/summaryResponse.dto';
@@ -44,7 +44,10 @@ export class LoanSchemeListComponent implements OnInit {
       },
     },
   ];
-  
+  readonly actions: CommonTableAction[] = [{ id: 'update', label: 'Update', variant: 'secondary' }];
+
+  get canUpdate(): boolean { return this.role === UserRole.BANK; }
+
   ngOnInit(): void {
     this.role = this.authService.getRole();
 
@@ -61,8 +64,8 @@ export class LoanSchemeListComponent implements OnInit {
           next: (rows) => {
             this.rows = rows;
           },
-          error: () => {
-            this.errorMessage = 'Could not load loan schemes. Please try again.';
+          error: (err) => {
+            this.errorMessage = err.error.message || 'Could not load loan schemes. Please try again.';
           },
         });
   }
@@ -70,5 +73,11 @@ export class LoanSchemeListComponent implements OnInit {
   onRowClick(row: Record<string, unknown>): void {
     const loanSchemeId = row['loanSchemeId'] as string;
     this.router.navigate(['/loan-schemes', loanSchemeId]);
+  }
+
+  onActionClick(event: { actionId: string; row: Record<string, unknown> }): void {
+    if (event.actionId !== 'update' || !this.canUpdate) return;
+    const loanSchemeId = event.row['loanSchemeId'] as string;
+    this.router.navigate(['/loan-scheme', loanSchemeId, 'edit']);
   }
 }

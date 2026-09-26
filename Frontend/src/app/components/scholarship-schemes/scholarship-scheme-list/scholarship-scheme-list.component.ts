@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { CommonTableColumn, CommonTableComponent } from '../../../shared/common-table/common-table.component';
+import { CommonTableAction, CommonTableColumn, CommonTableComponent } from '../../../shared/common-table/common-table.component';
 import { ScholarshipSchemeSummary } from '../../../core/models/summaryResponse.dto';
 import { ScholarshipSchemeService } from '../../../core/services/scholarship-scheme.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -41,6 +41,9 @@ export class ScholarshipSchemeListComponent implements OnInit {
       },
     },
   ];
+  readonly actions: CommonTableAction[] = [{ id: 'update', label: 'Update', variant: 'secondary' }];
+
+  get canUpdate(): boolean { return this.role === UserRole.GOVERNMENT; }
   ngOnInit(): void {
     this.role = this.authService.getRole();
 
@@ -66,5 +69,11 @@ export class ScholarshipSchemeListComponent implements OnInit {
   onRowClick(row: Record<string, unknown>): void {
     const scholarshipSchemeId = row['scholarshipSchemeId'] as string;
     this.router.navigate(['/scholarship-schemes',scholarshipSchemeId]);
+  }
+
+  onActionClick(event: { actionId: string; row: Record<string, unknown> }): void {
+    if (event.actionId !== 'update' || !this.canUpdate) return;
+    const scholarshipSchemeId = event.row['scholarshipSchemeId'] as string;
+    this.router.navigate(['/scholarship-scheme', scholarshipSchemeId, 'edit']);
   }
 }

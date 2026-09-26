@@ -2,6 +2,7 @@ package com.vidyasahay.vidyasahay.service.impl;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.Period;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -19,6 +20,7 @@ import com.vidyasahay.vidyasahay.dto.request.loanScheme.LoanEligibilityRequestDT
 import com.vidyasahay.vidyasahay.dto.request.loanScheme.UpdateLoanSchemeRequestDTO;
 import com.vidyasahay.vidyasahay.dto.response.loanScheme.LoanSchemeDetailedResponseDTO;
 import com.vidyasahay.vidyasahay.dto.response.loanScheme.LoanSchemeSummaryResponseDTO;
+import com.vidyasahay.vidyasahay.dto.response.SchemeDocumentRequirement;
 import com.vidyasahay.vidyasahay.entity.Bank;
 import com.vidyasahay.vidyasahay.entity.DocumentType;
 import com.vidyasahay.vidyasahay.entity.LoanScheme;
@@ -106,6 +108,23 @@ public class LoanSchemeServiceImpl implements LoanSchemeService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<LoanSchemeSummaryResponseDTO> getActiveLoanSchemes() {
+        LocalDate today = LocalDate.now();
+        List<LoanSchemeSummaryResponseDTO> schemes = loanSchemeRepository
+                .findByStatusAndEffectiveFromLessThanEqualAndEffectiveToGreaterThanEqual(
+                        SchemeStatus.ACTIVE, today, today)
+                .stream()
+                .map(this::toSummaryResponse)
+                .toList();
+
+        if (schemes.isEmpty()) {
+            throw new ResourceNotFoundException("No active loan schemes are available");
+        }
+        return schemes;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<LoanSchemeSummaryResponseDTO> getEligibleLoanSchemes(LoanEligibilityRequestDTO request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -113,6 +132,10 @@ public class LoanSchemeServiceImpl implements LoanSchemeService {
 
         Student student = studentRepository.findByUserId(user.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
+
+        if (request == null || request.requiredLoanAmount() == null || request.requiredLoanAmount().signum() <= 0) {
+            throw new IllegalArgumentException("Required loan amount must be greater than zero");
+        }
 
         if (student.getCourse() == null || student.getCourse().getProfession() == null) {
             throw new ResourceNotFoundException("Profession is not configured for the student");
@@ -140,7 +163,16 @@ public class LoanSchemeServiceImpl implements LoanSchemeService {
                     currentDate
                 )
                 .stream()
+                .filter(loanScheme -> loanScheme.getMinLoanAmount() == null
+                        || loanScheme.getMinLoanAmount().compareTo(request.requiredLoanAmount()) <= 0)
                 .filter(loanScheme -> professionEligibleSchemeIds.contains(loanScheme.getId()))
+                .filter(loanScheme -> {
+                    LoanSchemeEligibility eligibility = loanSchemeEligibilityRepository
+                            .findByLoanSchemeId(loanScheme.getId()).orElse(null);
+                    if (eligibility == null || student.getDateOfBirth() == null) return false;
+                    int age = Period.between(student.getDateOfBirth(), currentDate).getYears();
+                    return age >= eligibility.getMinAge() && age <= eligibility.getMaxAge();
+                })
                 .map(this::toSummaryResponse)
                 .toList();
 
@@ -190,10 +222,17 @@ public class LoanSchemeServiceImpl implements LoanSchemeService {
         LoanSchemeRepaymentRule repaymentRule = loanSchemeRepaymentRuleRepository.findByLoanSchemeId(loanSchemeId)
                         .orElseThrow(() ->new ResourceNotFoundException("Repayment details not found for the loan scheme") );
 
-        List<String> requiredDocuments = loanSchemeRequiredDocumentRepository.findByLoanSchemeId(loanSchemeId)
-                        .stream()
-                        .map(requiredDocument -> requiredDocument.getDocumentType().getName())
-                        .toList();
+        List<SchemeDocumentRequirement> documentRequirements = loanSchemeRequiredDocumentRepository
+                .findByLoanSchemeIdOrderByDocumentTypeNameAsc(loanSchemeId)
+                .stream()
+                .map(mapping -> new SchemeDocumentRequirement(
+                        mapping.getDocumentType().getId(),
+                        mapping.getDocumentType().getName(),
+                        mapping.getDocumentType().getDescription()))
+                .toList();
+        List<String> requiredDocuments = documentRequirements.stream()
+                .map(SchemeDocumentRequirement::name)
+                .toList();
 
         List<String> eligibleProfessions = loanSchemeProfessionRepository.findByLoanSchemeId(loanSchemeId)
                         .stream()
@@ -218,6 +257,7 @@ public class LoanSchemeServiceImpl implements LoanSchemeService {
                 eligibility.isCoBorrowerRequired(),
                 eligibility.getMinCreditScore(),
                 requiredDocuments,
+                documentRequirements,
                 eligibleProfessions,
                 repaymentRule.getMinTenureYears(),
                 repaymentRule.getMaxTenureYears(),
@@ -251,10 +291,7 @@ public class LoanSchemeServiceImpl implements LoanSchemeService {
         loanScheme.setMaxLoanAmount(request.maxLoanAmount());
         loanScheme.setInterestType(request.interestType());
 
-        // For a FIXED scheme there is a single rate, so both bounds are stored as the same value
-        loanScheme.setMinimumRate(request.interestType() == InterestType.FLOATING
-                ? request.minInterestRate()
-                : request.maxInterestRate());
+        loanScheme.setMinimumRate(request.minInterestRate());
         loanScheme.setMaximumRate(request.maxInterestRate());
 
         loanScheme.setDisbursementType(request.disbursementType());
@@ -374,18 +411,12 @@ public class LoanSchemeServiceImpl implements LoanSchemeService {
             throw new IllegalArgumentException("Maximum interest rate is required");
         }
 
-        if (effectiveInterestType == InterestType.FLOATING) {
+        if (effectiveMinimumRate == null) {
+            throw new IllegalArgumentException("Minimum interest rate is required");
+        }
 
-            if (effectiveMinimumRate == null) {
-                throw new IllegalArgumentException("Minimum interest rate is required for a FLOATING interest type");
-            }
-
-            if (effectiveMinimumRate.compareTo(effectiveMaximumRate) > 0) {
-                throw new IllegalArgumentException("Minimum interest rate cannot exceed maximum interest rate");
-            }
-        } else {
-            // FIXED: a single rate, so the lower bound mirrors the upper bound
-            effectiveMinimumRate = effectiveMaximumRate;
+        if (effectiveMinimumRate.compareTo(effectiveMaximumRate) > 0) {
+            throw new IllegalArgumentException("Minimum interest rate cannot exceed maximum interest rate");
         }
 
         loanScheme.setInterestType(effectiveInterestType);
@@ -532,15 +563,8 @@ public class LoanSchemeServiceImpl implements LoanSchemeService {
             throw new IllegalArgumentException("Minimum loan amount cannot exceed maximum loan amount");
         }
 
-        if (request.interestType() == InterestType.FLOATING) {
-
-            if (request.minInterestRate() == null) {
-                throw new IllegalArgumentException("Minimum interest rate is required for a FLOATING interest type");
-            }
-
-            if (request.minInterestRate().compareTo(request.maxInterestRate()) > 0) {
-                throw new IllegalArgumentException("Minimum interest rate cannot exceed maximum interest rate");
-            }
+        if (request.minInterestRate().compareTo(request.maxInterestRate()) > 0) {
+            throw new IllegalArgumentException("Minimum interest rate cannot exceed maximum interest rate");
         }
 
         if (request.applierMinAge() > request.applierMaxAge()) {
@@ -641,21 +665,9 @@ public class LoanSchemeServiceImpl implements LoanSchemeService {
                 scheme.getBank().getId(),
                 scheme.getName(),
                 scheme.getInterestType(),
-                convertAmountToInt(scheme.getMinLoanAmount(), "Minimum loan amount"),
-                convertAmountToInt(scheme.getMaxLoanAmount(), "Maximum loan amount"),
+                scheme.getMinLoanAmount(),
+                scheme.getMaxLoanAmount(),
                 scheme.getStatus()
         );
-    }
-
-    private int convertAmountToInt(BigDecimal amount,String fieldName) {
-        if (amount == null) {
-            throw new IllegalStateException(fieldName + " must not be null");
-        }
-
-        try {
-            return amount.intValueExact();
-        } catch (ArithmeticException exception) {
-            throw new IllegalStateException(fieldName + " cannot be represented as a whole-number integer ",exception);
-        }
     }
 }

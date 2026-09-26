@@ -19,8 +19,8 @@ public class Institute extends BaseEntity {
 	@Column(name = "name", nullable = false, length = 200)
 	private String name;
 
-	@OneToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "address_id", nullable = false, unique = true)
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "address_id", nullable = false)
 	private Address address;
 
 	@Column(name = "location", length = 255)

@@ -17,6 +17,7 @@ package com.vidyasahay.vidyasahay.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
 public record UpdateBankRequest(
@@ -36,6 +37,13 @@ public record UpdateBankRequest(
                 regexp = "^[6-9][0-9]{9}$",
                 message = "Mobile number must be a valid 10-digit Indian mobile number"
         )
-        String mobile
+        String mobile,
+
+        @NotNull(message = "Status is required")
+        Boolean status
 ) {
+
+    public UpdateBankRequest(String firstName, String lastName, String email, String mobile) {
+        this(firstName, lastName, email, mobile, null);
+    }
 }
